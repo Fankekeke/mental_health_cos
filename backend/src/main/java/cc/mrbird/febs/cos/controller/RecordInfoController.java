@@ -30,7 +30,7 @@ public class RecordInfoController {
      */
     @GetMapping("/page")
     public R page(Page<RecordInfo> page, RecordInfo recordInfo) {
-        return R.ok();
+        return R.ok(recordInfoService.selectRecordPage(page, recordInfo));
     }
 
     /**

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.mrbird.febs.cos.dao.ArticleInfoMapper">
+
+    <!-- 分页获取文章信息 -->
+    <select id="selectArticlePage" resultType="java.util.LinkedHashMap">
+        select
+            id,
+            title,
+            content,
+            create_date,
+            create_by,
+            images
+        from
+            article_info
+        where 1 = 1
+        <if test="articleInfo.title != null and articleInfo.title != ''">
+            AND title LIKE CONCAT('%',#{articleInfo.title},'%')
+        </if>
+        <if test="articleInfo.createBy != null and articleInfo.createBy != ''">
+            AND create_by LIKE CONCAT('%',#{articleInfo.createBy},'%')
+        </if>
+        order by
+            create_date desc
+    </select>
+</mapper>

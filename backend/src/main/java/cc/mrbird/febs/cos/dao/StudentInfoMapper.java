@@ -1,9 +1,9 @@
-package cc.mrbird.febs.cos.service;
+package cc.mrbird.febs.cos.dao;
 
 import cc.mrbird.febs.cos.entity.StudentInfo;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.IService;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.LinkedHashMap;
@@ -11,7 +11,7 @@ import java.util.LinkedHashMap;
 /**
  * @author Fank gmail - fan1ke2ke@gmail.com
  */
-public interface IStudentInfoService extends IService<StudentInfo> {
+public interface StudentInfoMapper extends BaseMapper<StudentInfo> {
 
     /**
      * 分页获取学生信息
@@ -20,5 +20,5 @@ public interface IStudentInfoService extends IService<StudentInfo> {
      * @param studentInfo 学生信息
      * @return 结果
      */
-    IPage<LinkedHashMap<String, Object>> selectStudentPage(Page<StudentInfo> page, StudentInfo studentInfo);
+    IPage<LinkedHashMap<String, Object>> selectStudentPage(Page<StudentInfo> page, @Param("studentInfo") StudentInfo studentInfo);
 }

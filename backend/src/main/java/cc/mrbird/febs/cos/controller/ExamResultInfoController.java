@@ -30,7 +30,7 @@ public class ExamResultInfoController {
      */
     @GetMapping("/page")
     public R page(Page<ExamResultInfo> page, ExamResultInfo examResultInfo) {
-        return R.ok();
+        return R.ok(examResultInfoService.selectExamResultPage(page, examResultInfo));
     }
 
     /**

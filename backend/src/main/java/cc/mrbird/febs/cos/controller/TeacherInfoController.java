@@ -30,7 +30,7 @@ public class TeacherInfoController {
      */
     @GetMapping("/page")
     public R page(Page<TeacherInfo> page, TeacherInfo teacherInfo) {
-        return R.ok();
+        return R.ok(teacherInfoService.selectTeacherPage(page, teacherInfo));
     }
 
     /**

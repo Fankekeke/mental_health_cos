@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.mrbird.febs.cos.dao.ExamPaperInfoMapper">
+
+    <!-- 分页获取试卷信息 -->
+    <select id="selectExamPaperPage" resultType="java.util.LinkedHashMap">
+        select
+        epi.id,
+        epi.exampaper_name,
+        epi.code,
+        epi.status,
+        epi.create_date,
+        epi.create_by,
+        epi.content
+        from
+        exam_paper_info epi
+        where
+        1 = 1
+        <if test="examPaperInfo.exampaperName != null and examPaperInfo.exampaperName != ''">
+            AND epi.exampaper_name LIKE CONCAT('%',#{examPaperInfo.exampaperName},'%')
+        </if>
+        <if test="examPaperInfo.createBy != null and examPaperInfo.createBy != ''">
+            AND epi.create_by LIKE CONCAT('%',#{examPaperInfo.createBy},'%')
+        </if>
+        order by
+        epi.create_date desc
+    </select>
+</mapper>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.mrbird.febs.cos.dao.PostInfoMapper">
+
+    <!-- 分页获取贴子信息 -->
+    <select id="selectPostPage" resultType="java.util.LinkedHashMap">
+        select
+        pi.id,
+        pi.title,
+        pi.content,
+        pi.images,
+        pi.user_id,
+        pi.create_date,
+        pi.pageviews,
+        pi.tag_ids,
+        pi.delete_flag,
+        si.name as studentName,
+        si.images as studentImages
+        from
+        post_info pi
+        left join student_info si on
+        (si.id = pi.user_id)
+        where
+        1 = 1
+        <if test="postInfo.studentName != null and postInfo.studentName != ''">
+            AND si.name LIKE CONCAT('%',#{postInfo.studentName},'%')
+        </if>
+        <if test="postInfo.title != null and postInfo.title != ''">
+            AND pi.title LIKE CONCAT('%',#{postInfo.title},'%')
+        </if>
+        order by
+        pi.create_date desc
+    </select>
+</mapper>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.mrbird.febs.cos.dao.RecordInfoMapper">
+
+    <!-- 分页获取考试记录信息 -->
+    <select id="selectRecordPage" resultType="java.util.LinkedHashMap">
+        select
+        ri.id,
+        ri.student_id,
+        ri.exam_id,
+        ri.score,
+        ri.remark,
+        ri.end_date,
+        si.name as studentName,
+        si.images as studentImages,
+        epi.exampaper_name
+        from
+        record_info ri
+        left join student_info si on
+        (si.id = ri.student_id)
+        left join exam_paper_info epi on
+        (epi.id = ri.exam_id)
+        where
+        1 = 1
+        <if test="recordInfo.studentName != null and recordInfo.studentName != ''">
+            AND si.name LIKE CONCAT('%',#{recordInfo.studentName},'%')
+        </if>
+        <if test="recordInfo.exampaperName != null and recordInfo.exampaperName != ''">
+            AND epi.exampaper_name LIKE CONCAT('%',#{recordInfo.exampaperName},'%')
+        </if>
+        order ri.end_date desc
+    </select>
+</mapper>

@@ -55,7 +55,7 @@ public class ReplyInfo implements Serializable {
     /**
      * 发送时间
      */
-    private LocalDateTime sendCreate;
+    private String sendCreate;
 
     /**
      * 删除标识

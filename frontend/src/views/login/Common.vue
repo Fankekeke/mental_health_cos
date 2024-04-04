@@ -3,7 +3,7 @@
     <div class="content" style="margin: 0 auto">
       <div class="top">
         <div class="header">
-          <span class="title" style="color: white">停车场管理系统</span>
+          <span class="title" style="color: white">高校心理健康调查系统</span>
         </div>
         <div class="desc"></div>
       </div>

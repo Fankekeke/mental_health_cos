@@ -47,5 +47,10 @@ public class ArticleInfo implements Serializable {
      */
     private String createBy;
 
+    /**
+     * 图片
+     */
+    private String images;
+
 
 }
