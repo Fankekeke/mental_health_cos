@@ -33,6 +33,11 @@ public class ArticleInfo implements Serializable {
     private String title;
 
     /**
+     * 编号
+     */
+    private String code;
+
+    /**
      * 文章内容
      */
     private String content;
@@ -40,7 +45,7 @@ public class ArticleInfo implements Serializable {
     /**
      * 发布时间
      */
-    private LocalDateTime createDate;
+    private String createDate;
 
     /**
      * 发布人

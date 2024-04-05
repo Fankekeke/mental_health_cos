@@ -4,11 +4,15 @@ package cc.mrbird.febs.cos.controller;
 import cc.mrbird.febs.common.utils.R;
 import cc.mrbird.febs.cos.entity.StudentInfo;
 import cc.mrbird.febs.cos.service.IStudentInfoService;
+import cc.mrbird.febs.system.service.UserService;
+import cn.hutool.core.date.DateUtil;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -21,6 +25,8 @@ public class StudentInfoController {
 
     private final IStudentInfoService studentInfoService;
 
+    private final UserService userService;
+
     /**
      * 分页获取学生信息
      *
@@ -31,6 +37,32 @@ public class StudentInfoController {
     @GetMapping("/page")
     public R page(Page<StudentInfo> page, StudentInfo studentInfo) {
         return R.ok(studentInfoService.selectStudentPage(page, studentInfo));
+    }
+
+    /**
+     * 学生信息详情
+     *
+     * @param userId 学生ID
+     * @return 结果
+     */
+    @GetMapping("/detail/{userId}")
+    public R studentDetail(@PathVariable("userId") Integer userId) {
+        StudentInfo studentInfo = studentInfoService.getOne(Wrappers.<StudentInfo>lambdaQuery().eq(StudentInfo::getUserId, userId));
+        return R.ok(studentInfo);
+    }
+
+    /**
+     * 新增学生信息
+     *
+     * @param studentInfo 学生信息
+     * @return 结果
+     */
+    @PostMapping
+    public R save(StudentInfo studentInfo) throws Exception {
+        studentInfo.setCode("STU-" + System.currentTimeMillis());
+        studentInfo.setCreateDate(DateUtil.formatDateTime(new Date()));
+        userService.registStudent(studentInfo.getCode(), "1234qwer", studentInfo);
+        return R.ok(true);
     }
 
     /**
@@ -52,17 +84,6 @@ public class StudentInfoController {
     @GetMapping("/list")
     public R list() {
         return R.ok(studentInfoService.list());
-    }
-
-    /**
-     * 新增学生信息
-     *
-     * @param studentInfo 学生信息
-     * @return 结果
-     */
-    @PostMapping
-    public R save(StudentInfo studentInfo) {
-        return R.ok(studentInfoService.save(studentInfo));
     }
 
     /**

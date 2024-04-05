@@ -28,7 +28,7 @@ public class StudentInfo implements Serializable {
     private Integer id;
 
     /**
-     * 编号
+     * 学生编号
      */
     private String code;
 
@@ -38,29 +38,38 @@ public class StudentInfo implements Serializable {
     private String name;
 
     /**
-     * 手机号
+     * 出生日期
      */
-    private String phone;
+    private String birthday;
 
     /**
-     * 身份证号码
+     * 性别（1.男 2.女）
      */
-    private String idNumber;
+    private String sex;
 
     /**
-     * 邮箱地址
-     */
-    private String email;
-
-    /**
-     * 学生头像
+     * 头像
      */
     private String images;
 
     /**
+     * 联系方式
+     */
+    private String phone;
+
+    /**
+     * 备注
+     */
+    private String content;
+
+    /**
      * 创建时间
      */
-    private LocalDateTime createDate;
+    private String createDate;
 
+    /**
+     * 所属账户
+     */
+    private Integer userId;
 
 }

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.LinkedHashMap;
 
@@ -21,4 +22,12 @@ public interface IExamPaperInfoService extends IService<ExamPaperInfo> {
      * @return 结果
      */
     IPage<LinkedHashMap<String, Object>> selectExamPaperPage(Page<ExamPaperInfo> page, ExamPaperInfo examPaperInfo);
+
+    /**
+     * 导入专家信息列表
+     *
+     * @param file 文件
+     * @return 结果
+     */
+    String importExcel(MultipartFile file) throws Exception;
 }

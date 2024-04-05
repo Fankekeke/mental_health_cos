@@ -8,11 +8,13 @@
         id,
         code,
         name,
-        phone,
-        id_number,
-        email,
+        birthday,
+        sex,
         images,
-        create_date
+        phone,
+        content,
+        create_date,
+        user_id
         from
         student_info
         where

@@ -1,14 +1,18 @@
 package cc.mrbird.febs.cos.controller;
 
 
+import cc.mrbird.febs.common.utils.FileDownloadUtils;
 import cc.mrbird.febs.common.utils.R;
 import cc.mrbird.febs.cos.entity.ExamPaperInfo;
 import cc.mrbird.febs.cos.service.IExamPaperInfoService;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -31,6 +35,35 @@ public class ExamPaperInfoController {
     @GetMapping("/page")
     public R page(Page<ExamPaperInfo> page, ExamPaperInfo examPaperInfo) {
         return R.ok(examPaperInfoService.selectExamPaperPage(page, examPaperInfo));
+    }
+
+    /**
+     * 下载模板
+     */
+    @GetMapping("/template")
+    public void downloadTemplate(HttpServletResponse response) {
+        try {
+            FileDownloadUtils.downloadTemplate(response, "专家基础数据.xlsx");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 导入专家信息列表
+     */
+    @PostMapping("/import")
+    public R importExcel(@RequestParam("file") MultipartFile file) {
+        try {
+            String errorMsg = examPaperInfoService.importExcel(file);
+            if (StrUtil.isNotEmpty(errorMsg)) {
+                return R.error(errorMsg);
+            }
+            return R.ok();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return R.error("导入异常");
     }
 
     /**

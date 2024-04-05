@@ -64,6 +64,8 @@ public class ArticleInfoController {
      */
     @PostMapping
     public R save(ArticleInfo articleInfo) {
+        articleInfo.setCode("ART-" + System.currentTimeMillis());
+        articleInfo.setCreateDate(DateUtil.formatDateTime(new Date()));
         return R.ok(articleInfoService.save(articleInfo));
     }
 

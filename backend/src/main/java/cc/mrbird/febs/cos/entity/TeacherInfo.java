@@ -28,7 +28,7 @@ public class TeacherInfo implements Serializable {
     private Integer id;
 
     /**
-     * 编号
+     * 教师编号
      */
     private String code;
 
@@ -38,34 +38,49 @@ public class TeacherInfo implements Serializable {
     private String name;
 
     /**
-     * 手机号
+     * 出生日期
      */
-    private String phone;
+    private String birthday;
 
     /**
-     * 邮箱地址
+     * 性别（1.男 2.女）
      */
-    private String email;
+    private String sex;
 
     /**
-     * 学生头像
+     * 头像
      */
     private String images;
 
     /**
+     * 联系方式
+     */
+    private String phone;
+
+    /**
      * 创建时间
      */
-    private LocalDateTime createDate;
+    private String createDate;
+
+    /**
+     * 备注
+     */
+    private String content;
+
+    /**
+     * 状态（0.离职 1.在职）
+     */
+    private String status;
+
+    /**
+     * 所属账户
+     */
+    private Integer userId;
 
     /**
      * 履历
      */
     private String resume;
-
-    /**
-     * 详细介绍
-     */
-    private String content;
 
     /**
      * 擅长

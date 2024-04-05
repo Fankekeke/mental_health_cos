@@ -15,11 +15,13 @@
         pi.tag_ids,
         pi.delete_flag,
         si.name as studentName,
-        si.images as studentImages
+        si.images as studentImages,
+        group_concat( ti.NAME ) as tagName
         from
         post_info pi
         left join student_info si on
         (si.id = pi.user_id)
+        LEFT JOIN tag_info ti ON FIND_IN_SET(ti.id , pi.tag_ids)
         where
         1 = 1
         <if test="postInfo.studentName != null and postInfo.studentName != ''">
@@ -28,6 +30,10 @@
         <if test="postInfo.title != null and postInfo.title != ''">
             AND pi.title LIKE CONCAT('%',#{postInfo.title},'%')
         </if>
+        <if test="postInfo.tagId != null and postInfo.tagId != ''">
+            AND pi.tag_ids LIKE CONCAT('%',#{postInfo.tagId},'%')
+        </if>
+        group by pi.id
         order by
         pi.create_date desc
     </select>

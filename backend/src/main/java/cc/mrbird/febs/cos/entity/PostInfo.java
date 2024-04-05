@@ -58,6 +58,9 @@ public class PostInfo implements Serializable {
      */
     private Integer pageviews;
 
+    @TableField(exist = false)
+    private Integer tagId;
+
     /**
      * 所属模块
      */

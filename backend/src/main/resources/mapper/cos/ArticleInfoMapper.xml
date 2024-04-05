@@ -6,6 +6,7 @@
     <select id="selectArticlePage" resultType="java.util.LinkedHashMap">
         select
             id,
+            code,
             title,
             content,
             create_date,
