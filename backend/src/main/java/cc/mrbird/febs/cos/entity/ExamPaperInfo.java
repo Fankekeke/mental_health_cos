@@ -45,7 +45,7 @@ public class ExamPaperInfo implements Serializable {
     /**
      * 创建时间
      */
-    private LocalDateTime createDate;
+    private String createDate;
 
     /**
      * 创建人

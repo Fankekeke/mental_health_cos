@@ -7,18 +7,18 @@
           <div :class="advanced ? null: 'fold'">
             <a-col :md="6" :sm="24">
               <a-form-item
-                label="学生编号"
-                :labelCol="{span: 5}"
-                :wrapperCol="{span: 18, offset: 1}">
-                <a-input v-model="queryParams.code"/>
+                label="用户昵称"
+                :labelCol="{span: 4}"
+                :wrapperCol="{span: 18, offset: 2}">
+                <a-input v-model="queryParams.username"/>
               </a-form-item>
             </a-col>
             <a-col :md="6" :sm="24">
               <a-form-item
-                label="学生姓名"
-                :labelCol="{span: 5}"
-                :wrapperCol="{span: 18, offset: 1}">
-                <a-input v-model="queryParams.name"/>
+                label="所属贴子"
+                :labelCol="{span: 4}"
+                :wrapperCol="{span: 18, offset: 2}">
+                <a-input v-model="queryParams.title"/>
               </a-form-item>
             </a-col>
           </div>
@@ -31,7 +31,7 @@
     </div>
     <div>
       <div class="operator">
-        <a-button type="primary" ghost @click="add">新增</a-button>
+        <!--        <a-button type="primary" ghost @click="add">新增</a-button>-->
         <a-button @click="batchDelete">删除</a-button>
       </div>
       <!-- 表格区域 -->
@@ -44,10 +44,13 @@
                :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
                :scroll="{ x: 900 }"
                @change="handleTableChange">
+        <template slot="avatarShow" slot-scope="text, record">
+          <template>
+            <img alt="头像" :src="'static/avatar/' + text">
+          </template>
+        </template>
         <template slot="titleShow" slot-scope="text, record">
           <template>
-            <a-badge status="processing" v-if="record.rackUp === 1"/>
-            <a-badge status="error" v-if="record.rackUp === 0"/>
             <a-tooltip>
               <template slot="title">
                 {{ record.title }}
@@ -62,61 +65,38 @@
               <template slot="title">
                 {{ record.content }}
               </template>
-              {{ record.content.slice(0, 40) }} ...
+              {{ record.content.slice(0, 30) }} ...
             </a-tooltip>
           </template>
         </template>
         <template slot="operation" slot-scope="text, record">
-          <a-icon type="setting" theme="twoTone" twoToneColor="#4a9ff5" @click="edit(record)" title="修 改"></a-icon>
-          <a-icon type="file-search" @click="studentViewOpen(record)" title="详 情" style="margin-left: 15px"></a-icon>
         </template>
       </a-table>
     </div>
-    <student-add
-      v-if="studentAdd.visiable"
-      @close="handlestudentAddClose"
-      @success="handlestudentAddSuccess"
-      :studentAddVisiable="studentAdd.visiable">
-    </student-add>
-    <student-edit
-      ref="studentEdit"
-      @close="handlestudentEditClose"
-      @success="handlestudentEditSuccess"
-      :studentEditVisiable="studentEdit.visiable">
-    </student-edit>
-    <student-view
-      @close="handlestudentViewClose"
-      :studentShow="studentView.visiable"
-      :studentData="studentView.data">
-    </student-view>
+    <user-view
+      @close="handleUserViewClose"
+      :userShow="userView.visiable"
+      :userData="userView.data">
+    </user-view>
   </a-card>
 </template>
 
 <script>
 import RangeDate from '@/components/datetime/RangeDate'
-import studentView from './StudentView.vue'
-import studentAdd from './StudentAdd.vue'
-import studentEdit from './StudentEdit.vue'
 import {mapState} from 'vuex'
 import moment from 'moment'
 moment.locale('zh-cn')
 
 export default {
-  name: 'student',
-  components: {studentAdd, studentEdit, RangeDate, studentView},
+  name: 'User',
+  components: {RangeDate},
   data () {
     return {
-      advanced: false,
-      studentAdd: {
-        visiable: false
-      },
-      studentEdit: {
-        visiable: false
-      },
-      studentView: {
+      userView: {
         visiable: false,
         data: null
       },
+      advanced: false,
       queryParams: {},
       filteredInfo: null,
       sortedInfo: null,
@@ -141,67 +121,31 @@ export default {
     }),
     columns () {
       return [{
-        title: '学生编号',
-        dataIndex: 'code'
+        title: '用户昵称',
+        dataIndex: 'studentName'
       }, {
-        title: '学生姓名',
-        dataIndex: 'name',
-        customRender: (text, row, index) => {
-          if (text !== null) {
-            return text
-          } else {
-            return '- -'
-          }
-        }
-      }, {
-        title: '出生日期',
-        dataIndex: 'birthday',
-        customRender: (text, row, index) => {
-          if (text !== null) {
-            return text
-          } else {
-            return '- -'
-          }
-        }
-      }, {
-        title: '性别',
-        dataIndex: 'sex',
-        customRender: (text, row, index) => {
-          switch (text) {
-            case '1':
-              return <a-tag>男</a-tag>
-            case '2':
-              return <a-tag>女</a-tag>
-            default:
-              return '- -'
-          }
-        }
-      }, {
-        title: '学生头像',
-        dataIndex: 'images',
+        title: '头像',
+        dataIndex: 'studentImages',
         customRender: (text, record, index) => {
-          if (!record.images) return <a-avatar shape="square" icon="user" />
+          if (!record.studentImages) return <a-avatar shape="square" icon="user" />
           return <a-popover>
             <template slot="content">
-              <a-avatar shape="square" size={132} icon="user" src={ 'http://127.0.0.1:9527/imagesWeb/' + record.images.split(',')[0] } />
+              <a-avatar shape="square" size={132} icon="user" src={ 'http://127.0.0.1:9527/imagesWeb/' + record.studentImages } />
             </template>
-            <a-avatar shape="square" icon="user" src={ 'http://127.0.0.1:9527/imagesWeb/' + record.images.split(',')[0] } />
+            <a-avatar shape="square" icon="user" src={ 'http://127.0.0.1:9527/imagesWeb/' + record.studentImages } />
           </a-popover>
         }
       }, {
-        title: '联系方式',
-        dataIndex: 'phone',
-        customRender: (text, row, index) => {
-          if (text !== null) {
-            return text
-          } else {
-            return '- -'
-          }
-        }
+        title: '所属贴子',
+        dataIndex: 'title',
+        scopedSlots: {customRender: 'titleShow'}
       }, {
-        title: '操作',
-        dataIndex: 'operation',
-        scopedSlots: {customRender: 'operation'}
+        title: '消息内容',
+        dataIndex: 'content',
+        scopedSlots: {customRender: 'contentShow'}
+      }, {
+        title: '发送时间',
+        dataIndex: 'sendCreate'
       }]
     }
   },
@@ -209,41 +153,18 @@ export default {
     this.fetch()
   },
   methods: {
-    studentViewOpen (row) {
-      this.studentView.data = row
-      this.studentView.visiable = true
+    view (row) {
+      this.userView.data = row
+      this.userView.visiable = true
     },
-    handlestudentViewClose () {
-      this.studentView.visiable = false
+    handleUserViewClose () {
+      this.userView.visiable = false
     },
     onSelectChange (selectedRowKeys) {
       this.selectedRowKeys = selectedRowKeys
     },
     toggleAdvanced () {
       this.advanced = !this.advanced
-    },
-    add () {
-      this.studentAdd.visiable = true
-    },
-    handlestudentAddClose () {
-      this.studentAdd.visiable = false
-    },
-    handlestudentAddSuccess () {
-      this.studentAdd.visiable = false
-      this.$message.success('新增学生成功')
-      this.search()
-    },
-    edit (record) {
-      this.$refs.studentEdit.setFormValues(record)
-      this.studentEdit.visiable = true
-    },
-    handlestudentEditClose () {
-      this.studentEdit.visiable = false
-    },
-    handlestudentEditSuccess () {
-      this.studentEdit.visiable = false
-      this.$message.success('修改学生成功')
-      this.search()
     },
     handleDeptChange (value) {
       this.queryParams.deptId = value || ''
@@ -260,7 +181,7 @@ export default {
         centered: true,
         onOk () {
           let ids = that.selectedRowKeys.join(',')
-          that.$delete('/cos/student-info/' + ids).then(() => {
+          that.$delete('/cos/reply-info/' + ids).then(() => {
             that.$message.success('删除成功')
             that.selectedRowKeys = []
             that.search()
@@ -330,7 +251,7 @@ export default {
         params.size = this.pagination.defaultPageSize
         params.current = this.pagination.defaultCurrent
       }
-      this.$get('/cos/student-info/page', {
+      this.$get('/cos/reply-info/page', {
         ...params
       }).then((r) => {
         let data = r.data.data

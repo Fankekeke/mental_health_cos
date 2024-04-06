@@ -7,10 +7,10 @@
           <div :class="advanced ? null: 'fold'">
             <a-col :md="6" :sm="24">
               <a-form-item
-                label="学生编号"
+                label="试卷名称"
                 :labelCol="{span: 5}"
                 :wrapperCol="{span: 18, offset: 1}">
-                <a-input v-model="queryParams.code"/>
+                <a-input v-model="queryParams.exampaperName"/>
               </a-form-item>
             </a-col>
             <a-col :md="6" :sm="24">
@@ -18,7 +18,7 @@
                 label="学生姓名"
                 :labelCol="{span: 5}"
                 :wrapperCol="{span: 18, offset: 1}">
-                <a-input v-model="queryParams.name"/>
+                <a-input v-model="queryParams.studentName"/>
               </a-form-item>
             </a-col>
           </div>
@@ -62,58 +62,45 @@
               <template slot="title">
                 {{ record.content }}
               </template>
-              {{ record.content.slice(0, 40) }} ...
+              {{ record.content.slice(0, 30) }} ...
             </a-tooltip>
           </template>
         </template>
         <template slot="operation" slot-scope="text, record">
-          <a-icon type="setting" theme="twoTone" twoToneColor="#4a9ff5" @click="edit(record)" title="修 改"></a-icon>
-          <a-icon type="file-search" @click="studentViewOpen(record)" title="详 情" style="margin-left: 15px"></a-icon>
+          <a-icon type="file-search" @click="examViewOpen(record)" title="详 情" style="margin-left: 15px"></a-icon>
+          <a-icon v-if="record.status === '1'" type="caret-down" @click="audit(record.id, 0)" title="上 架" style="margin-left: 15px"></a-icon>
+          <a-icon v-if="record.status === '0'" type="caret-up" @click="audit(record.id, 1)" title="下 架" style="margin-left: 15px"></a-icon>
         </template>
       </a-table>
     </div>
-    <student-add
-      v-if="studentAdd.visiable"
-      @close="handlestudentAddClose"
-      @success="handlestudentAddSuccess"
-      :studentAddVisiable="studentAdd.visiable">
-    </student-add>
-    <student-edit
-      ref="studentEdit"
-      @close="handlestudentEditClose"
-      @success="handlestudentEditSuccess"
-      :studentEditVisiable="studentEdit.visiable">
-    </student-edit>
-    <student-view
-      @close="handlestudentViewClose"
-      :studentShow="studentView.visiable"
-      :studentData="studentView.data">
-    </student-view>
+    <exam-view
+      @close="handleexamViewClose"
+      :examShow="examView.visiable"
+      :examData="examView.data">
+    </exam-view>
   </a-card>
 </template>
 
 <script>
 import RangeDate from '@/components/datetime/RangeDate'
-import studentView from './StudentView.vue'
-import studentAdd from './StudentAdd.vue'
-import studentEdit from './StudentEdit.vue'
+import examView from './RecordView.vue'
 import {mapState} from 'vuex'
 import moment from 'moment'
 moment.locale('zh-cn')
 
 export default {
-  name: 'student',
-  components: {studentAdd, studentEdit, RangeDate, studentView},
+  name: 'exam',
+  components: {RangeDate, examView},
   data () {
     return {
       advanced: false,
-      studentAdd: {
+      examAdd: {
         visiable: false
       },
-      studentEdit: {
+      examEdit: {
         visiable: false
       },
-      studentView: {
+      examView: {
         visiable: false,
         data: null
       },
@@ -141,56 +128,39 @@ export default {
     }),
     columns () {
       return [{
-        title: '学生编号',
-        dataIndex: 'code'
+        title: '试卷名称',
+        dataIndex: 'exampaperName'
       }, {
         title: '学生姓名',
-        dataIndex: 'name',
-        customRender: (text, row, index) => {
-          if (text !== null) {
-            return text
-          } else {
-            return '- -'
-          }
-        }
-      }, {
-        title: '出生日期',
-        dataIndex: 'birthday',
-        customRender: (text, row, index) => {
-          if (text !== null) {
-            return text
-          } else {
-            return '- -'
-          }
-        }
-      }, {
-        title: '性别',
-        dataIndex: 'sex',
-        customRender: (text, row, index) => {
-          switch (text) {
-            case '1':
-              return <a-tag>男</a-tag>
-            case '2':
-              return <a-tag>女</a-tag>
-            default:
-              return '- -'
-          }
-        }
+        dataIndex: 'studentName'
       }, {
         title: '学生头像',
-        dataIndex: 'images',
+        dataIndex: 'studentImages',
         customRender: (text, record, index) => {
-          if (!record.images) return <a-avatar shape="square" icon="user" />
+          if (!record.studentImages) return <a-avatar shape="square" icon="user" />
           return <a-popover>
             <template slot="content">
-              <a-avatar shape="square" size={132} icon="user" src={ 'http://127.0.0.1:9527/imagesWeb/' + record.images.split(',')[0] } />
+              <a-avatar shape="square" size={132} icon="user" src={ 'http://127.0.0.1:9527/imagesWeb/' + record.studentImages } />
             </template>
-            <a-avatar shape="square" icon="user" src={ 'http://127.0.0.1:9527/imagesWeb/' + record.images.split(',')[0] } />
+            <a-avatar shape="square" icon="user" src={ 'http://127.0.0.1:9527/imagesWeb/' + record.studentImages } />
           </a-popover>
         }
       }, {
-        title: '联系方式',
-        dataIndex: 'phone',
+        title: '结果',
+        dataIndex: 'remark'
+      }, {
+        title: '分数',
+        dataIndex: 'score',
+        customRender: (text, row, index) => {
+          if (text !== null) {
+            return text
+          } else {
+            return '- -'
+          }
+        }
+      }, {
+        title: '答题时间',
+        dataIndex: 'endDate',
         customRender: (text, row, index) => {
           if (text !== null) {
             return text
@@ -209,12 +179,18 @@ export default {
     this.fetch()
   },
   methods: {
-    studentViewOpen (row) {
-      this.studentView.data = row
-      this.studentView.visiable = true
+    audit (id, status) {
+      this.$get('/cos/exam-paper-info/audit', {id: id, status}).then((r) => {
+        this.$message.success('修改成功')
+        this.search()
+      })
     },
-    handlestudentViewClose () {
-      this.studentView.visiable = false
+    examViewOpen (row) {
+      this.examView.data = row
+      this.examView.visiable = true
+    },
+    handleexamViewClose () {
+      this.examView.visiable = false
     },
     onSelectChange (selectedRowKeys) {
       this.selectedRowKeys = selectedRowKeys
@@ -223,26 +199,26 @@ export default {
       this.advanced = !this.advanced
     },
     add () {
-      this.studentAdd.visiable = true
+      this.examAdd.visiable = true
     },
-    handlestudentAddClose () {
-      this.studentAdd.visiable = false
+    handleexamAddClose () {
+      this.examAdd.visiable = false
     },
-    handlestudentAddSuccess () {
-      this.studentAdd.visiable = false
-      this.$message.success('新增学生成功')
+    handleexamAddSuccess () {
+      this.examAdd.visiable = false
+      this.$message.success('新增试卷成功')
       this.search()
     },
     edit (record) {
-      this.$refs.studentEdit.setFormValues(record)
-      this.studentEdit.visiable = true
+      this.$refs.examEdit.setFormValues(record)
+      this.examEdit.visiable = true
     },
-    handlestudentEditClose () {
-      this.studentEdit.visiable = false
+    handleexamEditClose () {
+      this.examEdit.visiable = false
     },
-    handlestudentEditSuccess () {
-      this.studentEdit.visiable = false
-      this.$message.success('修改学生成功')
+    handleexamEditSuccess () {
+      this.examEdit.visiable = false
+      this.$message.success('修改试卷成功')
       this.search()
     },
     handleDeptChange (value) {
@@ -260,7 +236,7 @@ export default {
         centered: true,
         onOk () {
           let ids = that.selectedRowKeys.join(',')
-          that.$delete('/cos/student-info/' + ids).then(() => {
+          that.$delete('/cos/record-info/' + ids).then(() => {
             that.$message.success('删除成功')
             that.selectedRowKeys = []
             that.search()
@@ -330,7 +306,7 @@ export default {
         params.size = this.pagination.defaultPageSize
         params.current = this.pagination.defaultCurrent
       }
-      this.$get('/cos/student-info/page', {
+      this.$get('/cos/record-info/page', {
         ...params
       }).then((r) => {
         let data = r.data.data

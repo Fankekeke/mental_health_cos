@@ -1,5 +1,5 @@
 <template>
-  <a-modal v-model="show" title="修改学生" @cancel="onClose" :width="800">
+  <a-modal v-model="show" title="修改试卷" @cancel="onClose" :width="800">
     <template slot="footer">
       <a-button key="back" @click="onClose">
         取消
@@ -11,50 +11,31 @@
     <a-form :form="form" layout="vertical">
       <a-row :gutter="20">
         <a-col :span="12">
-          <a-form-item label='学生姓名' v-bind="formItemLayout">
+          <a-form-item label='试卷标题' v-bind="formItemLayout">
             <a-input v-decorator="[
-            'name',
-            { rules: [{ required: true, message: '请输入学生姓名!' }] }
+            'title',
+            { rules: [{ required: true, message: '请输入名称!' }] }
             ]"/>
           </a-form-item>
         </a-col>
         <a-col :span="12">
-          <a-form-item label='联系方式' v-bind="formItemLayout">
+          <a-form-item label='发布人' v-bind="formItemLayout">
             <a-input v-decorator="[
-            'phone',
-            { rules: [{ required: true, message: '请输入联系方式!' }] }
-            ]"/>
-          </a-form-item>
-        </a-col>
-        <a-col :span="12">
-          <a-form-item label='性别' v-bind="formItemLayout">
-            <a-select v-decorator="[
-              'sex',
-              { rules: [{ required: true, message: '请输入性别!' }] }
-              ]">
-              <a-select-option value="1">男</a-select-option>
-              <a-select-option value="2">女</a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-        <a-col :span="12">
-          <a-form-item label='出生日期' v-bind="formItemLayout">
-            <a-date-picker style="width: 100%;" v-decorator="[
-            'birthday',
-            { rules: [{ required: true, message: '请输入出生日期!' }] }
+            'createBy',
+            { rules: [{ required: true, message: '请输入上传人!' }] }
             ]"/>
           </a-form-item>
         </a-col>
         <a-col :span="24">
-          <a-form-item label='备注' v-bind="formItemLayout">
-            <a-textarea :rows="6" v-decorator="[
+          <a-form-item label='试卷内容' v-bind="formItemLayout">
+            <a-textarea :rows="10" v-decorator="[
             'content',
-             { rules: [{ required: true, message: '请输入备注!' }] }
+             { rules: [{ required: true, message: '请输入名称!' }] }
             ]"/>
           </a-form-item>
         </a-col>
         <a-col :span="24">
-          <a-form-item label='学生头像' v-bind="formItemLayout">
+          <a-form-item label='图册' v-bind="formItemLayout">
             <a-upload
               name="avatar"
               action="http://127.0.0.1:9527/file/fileUpload/"
@@ -82,8 +63,6 @@
 
 <script>
 import {mapState} from 'vuex'
-import moment from 'moment'
-moment.locale('zh-cn')
 function getBase64 (file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -97,9 +76,9 @@ const formItemLayout = {
   wrapperCol: { span: 24 }
 }
 export default {
-  name: 'studentEdit',
+  name: 'examEdit',
   props: {
-    studentEditVisiable: {
+    examEditVisiable: {
       default: false
     }
   },
@@ -109,7 +88,7 @@ export default {
     }),
     show: {
       get: function () {
-        return this.studentEditVisiable
+        return this.examEditVisiable
       },
       set: function () {
       }
@@ -126,14 +105,7 @@ export default {
       previewImage: ''
     }
   },
-  mounted () {
-  },
   methods: {
-    selectClassesList () {
-      this.$get('/cos/classes-info/list').then((r) => {
-        this.classesList = r.data.data
-      })
-    },
     handleCancel () {
       this.previewVisible = false
     },
@@ -156,26 +128,21 @@ export default {
         this.fileList = imageList
       }
     },
-    setFormValues ({...student}) {
-      this.rowId = student.id
-      let fields = ['name', 'sex', 'birthday', 'phone', 'content', 'classesId']
+    setFormValues ({...exam}) {
+      this.rowId = exam.id
+      let fields = ['title', 'content', 'createBy']
       let obj = {}
-      Object.keys(student).forEach((key) => {
+      Object.keys(exam).forEach((key) => {
         if (key === 'images') {
           this.fileList = []
-          this.imagesInit(student['images'])
+          this.imagesInit(exam['images'])
         }
-        // if (key === 'classesId') {
-        //   student[key] = student[key].toString()
-        // }
-        if (key === 'birthday') {
-          if (key === 'birthday' && student[key] != null) {
-            student[key] = moment(student[key])
-          }
+        if (key === 'type' && exam[key] != null) {
+          exam[key] = exam[key].toString()
         }
         if (fields.indexOf(key) !== -1) {
           this.form.getFieldDecorator(key)
-          obj[key] = student[key]
+          obj[key] = exam[key]
         }
       })
       this.form.setFieldsValue(obj)
@@ -201,10 +168,9 @@ export default {
       this.form.validateFields((err, values) => {
         values.id = this.rowId
         values.images = images.length > 0 ? images.join(',') : null
-        values.birthday = moment(values.birthday).format('YYYY-MM-DD')
         if (!err) {
           this.loading = true
-          this.$put('/cos/student-info', {
+          this.$put('/cos/exam-info', {
             ...values
           }).then((r) => {
             this.reset()

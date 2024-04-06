@@ -7,18 +7,28 @@
           <div :class="advanced ? null: 'fold'">
             <a-col :md="6" :sm="24">
               <a-form-item
-                label="学生编号"
-                :labelCol="{span: 5}"
-                :wrapperCol="{span: 18, offset: 1}">
-                <a-input v-model="queryParams.code"/>
+                label="贴子标题"
+                :labelCol="{span: 4}"
+                :wrapperCol="{span: 18, offset: 2}">
+                <a-input v-model="queryParams.title"/>
               </a-form-item>
             </a-col>
             <a-col :md="6" :sm="24">
               <a-form-item
-                label="学生姓名"
-                :labelCol="{span: 5}"
-                :wrapperCol="{span: 18, offset: 1}">
-                <a-input v-model="queryParams.name"/>
+                label="发布人"
+                :labelCol="{span: 4}"
+                :wrapperCol="{span: 18, offset: 2}">
+                <a-input v-model="queryParams.studentName"/>
+              </a-form-item>
+            </a-col>
+            <a-col :md="6" :sm="24">
+              <a-form-item
+                label="所属模块"
+                :labelCol="{span: 4}"
+                :wrapperCol="{span: 18, offset: 2}">
+                <a-select v-model="queryParams.tagId" allowClear>
+                  <a-select-option v-for="(item, index) in tagList" :key="index" :value="item.id">{{ item.name }}</a-select-option>
+                </a-select>
               </a-form-item>
             </a-col>
           </div>
@@ -46,8 +56,8 @@
                @change="handleTableChange">
         <template slot="titleShow" slot-scope="text, record">
           <template>
-            <a-badge status="processing" v-if="record.rackUp === 1"/>
-            <a-badge status="error" v-if="record.rackUp === 0"/>
+            <a-badge v-if="record.deleteFlag == 1" status="error"/>
+            <a-badge v-if="record.deleteFlag == 0" status="processing"/>
             <a-tooltip>
               <template slot="title">
                 {{ record.title }}
@@ -62,60 +72,52 @@
               <template slot="title">
                 {{ record.content }}
               </template>
-              {{ record.content.slice(0, 40) }} ...
+              {{ record.content.slice(0, 30) }} ...
             </a-tooltip>
           </template>
         </template>
         <template slot="operation" slot-scope="text, record">
+          <a-icon v-if="record.deleteFlag == 1" type="caret-up" @click="auditDelete(record)" title="up" style="margin-right: 10px"></a-icon>
           <a-icon type="setting" theme="twoTone" twoToneColor="#4a9ff5" @click="edit(record)" title="修 改"></a-icon>
-          <a-icon type="file-search" @click="studentViewOpen(record)" title="详 情" style="margin-left: 15px"></a-icon>
         </template>
       </a-table>
     </div>
-    <student-add
-      v-if="studentAdd.visiable"
-      @close="handlestudentAddClose"
-      @success="handlestudentAddSuccess"
-      :studentAddVisiable="studentAdd.visiable">
-    </student-add>
-    <student-edit
-      ref="studentEdit"
-      @close="handlestudentEditClose"
-      @success="handlestudentEditSuccess"
-      :studentEditVisiable="studentEdit.visiable">
-    </student-edit>
-    <student-view
-      @close="handlestudentViewClose"
-      :studentShow="studentView.visiable"
-      :studentData="studentView.data">
-    </student-view>
+    <post-add
+      v-if="postAdd.visiable"
+      @close="handlepostAddClose"
+      @success="handlepostAddSuccess"
+      :postAddVisiable="postAdd.visiable"
+      :tagList="tagListData">
+    </post-add>
+    <post-edit
+      ref="postEdit"
+      @close="handlepostEditClose"
+      @success="handlepostEditSuccess"
+      :postEditVisiable="postEdit.visiable"
+      :tagList="tagListData">
+    </post-edit>
   </a-card>
 </template>
 
 <script>
 import RangeDate from '@/components/datetime/RangeDate'
-import studentView from './StudentView.vue'
-import studentAdd from './StudentAdd.vue'
-import studentEdit from './StudentEdit.vue'
+import PostAdd from './PostAdd'
+import PostEdit from './PostEdit'
 import {mapState} from 'vuex'
 import moment from 'moment'
 moment.locale('zh-cn')
 
 export default {
-  name: 'student',
-  components: {studentAdd, studentEdit, RangeDate, studentView},
+  name: 'post',
+  components: {PostAdd, PostEdit, RangeDate},
   data () {
     return {
       advanced: false,
-      studentAdd: {
+      postAdd: {
         visiable: false
       },
-      studentEdit: {
+      postEdit: {
         visiable: false
-      },
-      studentView: {
-        visiable: false,
-        data: null
       },
       queryParams: {},
       filteredInfo: null,
@@ -132,7 +134,8 @@ export default {
         showSizeChanger: true,
         showTotal: (total, range) => `显示 ${range[0]} ~ ${range[1]} 条记录，共 ${total} 条记录`
       },
-      userList: []
+      tagList: [],
+      tagListData: []
     }
   },
   computed: {
@@ -141,11 +144,8 @@ export default {
     }),
     columns () {
       return [{
-        title: '学生编号',
-        dataIndex: 'code'
-      }, {
-        title: '学生姓名',
-        dataIndex: 'name',
+        title: '发布人',
+        dataIndex: 'studentName',
         customRender: (text, row, index) => {
           if (text !== null) {
             return text
@@ -154,43 +154,38 @@ export default {
           }
         }
       }, {
-        title: '出生日期',
-        dataIndex: 'birthday',
-        customRender: (text, row, index) => {
-          if (text !== null) {
-            return text
-          } else {
-            return '- -'
-          }
-        }
-      }, {
-        title: '性别',
-        dataIndex: 'sex',
-        customRender: (text, row, index) => {
-          switch (text) {
-            case '1':
-              return <a-tag>男</a-tag>
-            case '2':
-              return <a-tag>女</a-tag>
-            default:
-              return '- -'
-          }
-        }
-      }, {
-        title: '学生头像',
-        dataIndex: 'images',
+        title: '头像',
+        dataIndex: 'studentImages',
         customRender: (text, record, index) => {
-          if (!record.images) return <a-avatar shape="square" icon="user" />
+          if (!record.studentImages) return <a-avatar shape="square" icon="user" />
           return <a-popover>
             <template slot="content">
-              <a-avatar shape="square" size={132} icon="user" src={ 'http://127.0.0.1:9527/imagesWeb/' + record.images.split(',')[0] } />
+              <a-avatar shape="square" size={132} icon="user" src={ 'http://127.0.0.1:9527/imagesWeb/' + record.studentImages } />
             </template>
-            <a-avatar shape="square" icon="user" src={ 'http://127.0.0.1:9527/imagesWeb/' + record.images.split(',')[0] } />
+            <a-avatar shape="square" icon="user" src={ 'http://127.0.0.1:9527/imagesWeb/' + record.studentImages } />
           </a-popover>
         }
       }, {
-        title: '联系方式',
-        dataIndex: 'phone',
+        title: '标题',
+        dataIndex: 'title',
+        scopedSlots: { customRender: 'titleShow' }
+      }, {
+        title: '贴子内容',
+        dataIndex: 'content',
+        scopedSlots: { customRender: 'contentShow' }
+      }, {
+        title: '所属模块',
+        dataIndex: 'tagName',
+        customRender: (text, row, index) => {
+          if (text !== null) {
+            return text
+          } else {
+            return '- -'
+          }
+        }
+      }, {
+        title: '发布时间',
+        dataIndex: 'createDate',
         customRender: (text, row, index) => {
           if (text !== null) {
             return text
@@ -207,14 +202,25 @@ export default {
   },
   mounted () {
     this.fetch()
+    this.getTagList()
   },
   methods: {
-    studentViewOpen (row) {
-      this.studentView.data = row
-      this.studentView.visiable = true
+    auditDelete (row) {
+      row.deleteFlag = 0
+      this.$put('/cos/post-info', row).then((r) => {
+        this.$message.success('恢复贴子成功！')
+        this.search()
+      })
     },
-    handlestudentViewClose () {
-      this.studentView.visiable = false
+    getTagList () {
+      this.$get('/cos/tag-info/list').then((r) => {
+        this.tagList = r.data.data
+        let tagListData = []
+        r.data.data.forEach(item => {
+          tagListData.push({label: item.name, value: item.id})
+        })
+        this.tagListData = tagListData
+      })
     },
     onSelectChange (selectedRowKeys) {
       this.selectedRowKeys = selectedRowKeys
@@ -223,26 +229,26 @@ export default {
       this.advanced = !this.advanced
     },
     add () {
-      this.studentAdd.visiable = true
+      this.postAdd.visiable = true
     },
-    handlestudentAddClose () {
-      this.studentAdd.visiable = false
+    handlepostAddClose () {
+      this.postAdd.visiable = false
     },
-    handlestudentAddSuccess () {
-      this.studentAdd.visiable = false
-      this.$message.success('新增学生成功')
+    handlepostAddSuccess () {
+      this.postAdd.visiable = false
+      this.$message.success('新增贴子成功')
       this.search()
     },
     edit (record) {
-      this.$refs.studentEdit.setFormValues(record)
-      this.studentEdit.visiable = true
+      this.$refs.postEdit.setFormValues(record)
+      this.postEdit.visiable = true
     },
-    handlestudentEditClose () {
-      this.studentEdit.visiable = false
+    handlepostEditClose () {
+      this.postEdit.visiable = false
     },
-    handlestudentEditSuccess () {
-      this.studentEdit.visiable = false
-      this.$message.success('修改学生成功')
+    handlepostEditSuccess () {
+      this.postEdit.visiable = false
+      this.$message.success('修改贴子成功')
       this.search()
     },
     handleDeptChange (value) {
@@ -260,7 +266,7 @@ export default {
         centered: true,
         onOk () {
           let ids = that.selectedRowKeys.join(',')
-          that.$delete('/cos/student-info/' + ids).then(() => {
+          that.$delete('/cos/post-info/' + ids).then(() => {
             that.$message.success('删除成功')
             that.selectedRowKeys = []
             that.search()
@@ -330,7 +336,10 @@ export default {
         params.size = this.pagination.defaultPageSize
         params.current = this.pagination.defaultCurrent
       }
-      this.$get('/cos/student-info/page', {
+      if (params.tagId === undefined) {
+        delete params.tagId
+      }
+      this.$get('/cos/post-info/page', {
         ...params
       }).then((r) => {
         let data = r.data.data

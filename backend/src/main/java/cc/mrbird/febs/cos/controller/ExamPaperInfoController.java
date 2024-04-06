@@ -6,6 +6,7 @@ import cc.mrbird.febs.common.utils.R;
 import cc.mrbird.febs.cos.entity.ExamPaperInfo;
 import cc.mrbird.febs.cos.service.IExamPaperInfoService;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,13 +38,18 @@ public class ExamPaperInfoController {
         return R.ok(examPaperInfoService.selectExamPaperPage(page, examPaperInfo));
     }
 
+    @GetMapping("/audit")
+    public R audit(Integer id, String status) {
+        return R.ok(examPaperInfoService.update(Wrappers.<ExamPaperInfo>lambdaUpdate().set(ExamPaperInfo::getStatus, status).eq(ExamPaperInfo::getId, id)));
+    }
+
     /**
      * 下载模板
      */
     @GetMapping("/template")
     public void downloadTemplate(HttpServletResponse response) {
         try {
-            FileDownloadUtils.downloadTemplate(response, "专家基础数据.xlsx");
+            FileDownloadUtils.downloadTemplate(response, "试卷模板.xlsx");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -74,7 +80,7 @@ public class ExamPaperInfoController {
      */
     @GetMapping("/{id}")
     public R detail(@PathVariable("id") Integer id) {
-        return R.ok(examPaperInfoService.getById(id));
+        return R.ok(examPaperInfoService.detail(id));
     }
 
     /**

@@ -34,7 +34,7 @@ public class ExamResultInfo implements Serializable {
     /**
      * 开始分数
      */
-    private Integer socreStart;
+    private Integer scoreStart;
 
     /**
      * 结束分数

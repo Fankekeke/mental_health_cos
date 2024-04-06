@@ -28,6 +28,6 @@
         <if test="studentInfo.phone != null and studentInfo.phone != ''">
             AND phone LIKE CONCAT('%',#{studentInfo.phone},'%')
         </if>
-        create_date desc
+        order by create_date desc
     </select>
 </mapper>

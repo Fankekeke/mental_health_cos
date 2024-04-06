@@ -30,4 +30,12 @@ public interface IExamPaperInfoService extends IService<ExamPaperInfo> {
      * @return 结果
      */
     String importExcel(MultipartFile file) throws Exception;
+
+    /**
+     * 试卷信息详情
+     *
+     * @param id 试卷选项ID
+     * @return 结果
+     */
+    LinkedHashMap<String, Object> detail(Integer id);
 }

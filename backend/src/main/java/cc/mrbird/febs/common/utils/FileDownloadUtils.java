@@ -13,7 +13,7 @@ import java.nio.file.Paths;
 public class FileDownloadUtils {
 
     public static void downloadTemplate(HttpServletResponse response, String fileName) throws Exception {
-         InputStream in = Files.newInputStream(Paths.get("G:/Project/药品销售平台/drug_sales/backend/src/main/resources/template/" + fileName));
+         InputStream in = Files.newInputStream(Paths.get("G:/Project/高校学生心理健康调查系统/mental_health_cos/backend/src/main/resources/template/" + fileName));
 //        Resource res = new ClassPathResource("template/" + fileName);
 //        InputStream in = res.getInputStream();
 

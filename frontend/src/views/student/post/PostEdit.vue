@@ -1,5 +1,5 @@
 <template>
-  <a-modal v-model="show" title="修改学生" @cancel="onClose" :width="800">
+  <a-modal v-model="show" title="修改贴子" @cancel="onClose" :width="800">
     <template slot="footer">
       <a-button key="back" @click="onClose">
         取消
@@ -11,50 +11,32 @@
     <a-form :form="form" layout="vertical">
       <a-row :gutter="20">
         <a-col :span="12">
-          <a-form-item label='学生姓名' v-bind="formItemLayout">
+          <a-form-item label='公告标题' v-bind="formItemLayout">
             <a-input v-decorator="[
-            'name',
-            { rules: [{ required: true, message: '请输入学生姓名!' }] }
-            ]"/>
-          </a-form-item>
-        </a-col>
-        <a-col :span="12">
-          <a-form-item label='联系方式' v-bind="formItemLayout">
-            <a-input v-decorator="[
-            'phone',
-            { rules: [{ required: true, message: '请输入联系方式!' }] }
-            ]"/>
-          </a-form-item>
-        </a-col>
-        <a-col :span="12">
-          <a-form-item label='性别' v-bind="formItemLayout">
-            <a-select v-decorator="[
-              'sex',
-              { rules: [{ required: true, message: '请输入性别!' }] }
-              ]">
-              <a-select-option value="1">男</a-select-option>
-              <a-select-option value="2">女</a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-        <a-col :span="12">
-          <a-form-item label='出生日期' v-bind="formItemLayout">
-            <a-date-picker style="width: 100%;" v-decorator="[
-            'birthday',
-            { rules: [{ required: true, message: '请输入出生日期!' }] }
+            'title',
+            { rules: [{ required: true, message: '请输入名称!' }] }
             ]"/>
           </a-form-item>
         </a-col>
         <a-col :span="24">
-          <a-form-item label='备注' v-bind="formItemLayout">
+          <a-form-item label='所属分类' v-bind="formItemLayout">
+            <a-checkbox-group
+              v-model="tagCheck"
+              :options="tagList"
+              @change="onChange"
+            />
+          </a-form-item>
+        </a-col>
+        <a-col :span="24">
+          <a-form-item label='公告内容' v-bind="formItemLayout">
             <a-textarea :rows="6" v-decorator="[
             'content',
-             { rules: [{ required: true, message: '请输入备注!' }] }
+             { rules: [{ required: true, message: '请输入名称!' }] }
             ]"/>
           </a-form-item>
         </a-col>
         <a-col :span="24">
-          <a-form-item label='学生头像' v-bind="formItemLayout">
+          <a-form-item label='图册' v-bind="formItemLayout">
             <a-upload
               name="avatar"
               action="http://127.0.0.1:9527/file/fileUpload/"
@@ -82,8 +64,6 @@
 
 <script>
 import {mapState} from 'vuex'
-import moment from 'moment'
-moment.locale('zh-cn')
 function getBase64 (file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -97,10 +77,13 @@ const formItemLayout = {
   wrapperCol: { span: 24 }
 }
 export default {
-  name: 'studentEdit',
+  name: 'postEdit',
   props: {
-    studentEditVisiable: {
+    postEditVisiable: {
       default: false
+    },
+    tagList: {
+      type: Array
     }
   },
   computed: {
@@ -109,7 +92,7 @@ export default {
     }),
     show: {
       get: function () {
-        return this.studentEditVisiable
+        return this.postEditVisiable
       },
       set: function () {
       }
@@ -123,16 +106,13 @@ export default {
       loading: false,
       fileList: [],
       previewVisible: false,
-      previewImage: ''
+      previewImage: '',
+      tagCheck: []
     }
   },
-  mounted () {
-  },
   methods: {
-    selectClassesList () {
-      this.$get('/cos/classes-info/list').then((r) => {
-        this.classesList = r.data.data
-      })
+    onChange () {
+      console.log(this.tagCheck)
     },
     handleCancel () {
       this.previewVisible = false
@@ -156,26 +136,21 @@ export default {
         this.fileList = imageList
       }
     },
-    setFormValues ({...student}) {
-      this.rowId = student.id
-      let fields = ['name', 'sex', 'birthday', 'phone', 'content', 'classesId']
+    setFormValues ({...post}) {
+      this.rowId = post.id
+      let fields = ['title', 'content', 'tagIds', 'images']
       let obj = {}
-      Object.keys(student).forEach((key) => {
+      Object.keys(post).forEach((key) => {
         if (key === 'images') {
           this.fileList = []
-          this.imagesInit(student['images'])
+          this.imagesInit(post['images'])
         }
-        // if (key === 'classesId') {
-        //   student[key] = student[key].toString()
-        // }
-        if (key === 'birthday') {
-          if (key === 'birthday' && student[key] != null) {
-            student[key] = moment(student[key])
-          }
+        if (key === 'tagIds') {
+          this.tagCheck = post[key].split(',').map(Number)
         }
         if (fields.indexOf(key) !== -1) {
           this.form.getFieldDecorator(key)
-          obj[key] = student[key]
+          obj[key] = post[key]
         }
       })
       this.form.setFieldsValue(obj)
@@ -189,6 +164,10 @@ export default {
       this.$emit('close')
     },
     handleSubmit () {
+      if (this.tagCheck.length === 0) {
+        this.$message.error('需要选择所属分类！')
+        return
+      }
       // 获取图片List
       let images = []
       this.fileList.forEach(image => {
@@ -201,14 +180,18 @@ export default {
       this.form.validateFields((err, values) => {
         values.id = this.rowId
         values.images = images.length > 0 ? images.join(',') : null
-        values.birthday = moment(values.birthday).format('YYYY-MM-DD')
+        values.tagIds = this.tagCheck.join(',')
         if (!err) {
           this.loading = true
-          this.$put('/cos/student-info', {
+          this.$put('/cos/post-info', {
             ...values
           }).then((r) => {
-            this.reset()
-            this.$emit('success')
+            if (r.data.code === 500) {
+              this.$message.error(r.data.msg)
+            } else {
+              this.reset()
+              this.$emit('success')
+            }
           }).catch(() => {
             this.loading = false
           })

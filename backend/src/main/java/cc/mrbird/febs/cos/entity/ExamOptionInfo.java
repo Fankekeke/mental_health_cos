@@ -44,7 +44,7 @@ public class ExamOptionInfo implements Serializable {
     /**
      * 分数
      */
-    private Integer score;
+    private String score;
 
     /**
      * 正确答案

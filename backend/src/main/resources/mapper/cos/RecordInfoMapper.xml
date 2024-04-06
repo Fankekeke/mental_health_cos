@@ -28,6 +28,6 @@
         <if test="recordInfo.exampaperName != null and recordInfo.exampaperName != ''">
             AND epi.exampaper_name LIKE CONCAT('%',#{recordInfo.exampaperName},'%')
         </if>
-        order ri.end_date desc
+        order by ri.end_date desc
     </select>
 </mapper>

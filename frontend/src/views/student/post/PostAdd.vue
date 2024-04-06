@@ -1,5 +1,5 @@
 <template>
-  <a-modal v-model="show" title="新增学生" @cancel="onClose" :width="800">
+  <a-modal v-model="show" title="新增贴子" @cancel="onClose" :width="800">
     <template slot="footer">
       <a-button key="back" @click="onClose">
         取消
@@ -11,50 +11,31 @@
     <a-form :form="form" layout="vertical">
       <a-row :gutter="20">
         <a-col :span="12">
-          <a-form-item label='学生姓名' v-bind="formItemLayout">
+          <a-form-item label='贴子标题' v-bind="formItemLayout">
             <a-input v-decorator="[
-            'name',
-            { rules: [{ required: true, message: '请输入学生姓名!' }] }
-            ]"/>
-          </a-form-item>
-        </a-col>
-        <a-col :span="12">
-          <a-form-item label='联系方式' v-bind="formItemLayout">
-            <a-input v-decorator="[
-            'phone',
-            { rules: [{ required: true, message: '请输入联系方式!' }] }
-            ]"/>
-          </a-form-item>
-        </a-col>
-        <a-col :span="12">
-          <a-form-item label='性别' v-bind="formItemLayout">
-            <a-select v-decorator="[
-              'sex',
-              { rules: [{ required: true, message: '请输入性别!' }] }
-              ]">
-              <a-select-option value="1">男</a-select-option>
-              <a-select-option value="2">女</a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-        <a-col :span="12">
-          <a-form-item label='出生日期' v-bind="formItemLayout">
-            <a-date-picker style="width: 100%;" v-decorator="[
-            'birthday',
-            { rules: [{ required: true, message: '请输入出生日期!' }] }
+            'title',
+            { rules: [{ required: true, message: '请输入标题!' }] }
             ]"/>
           </a-form-item>
         </a-col>
         <a-col :span="24">
-          <a-form-item label='备注' v-bind="formItemLayout">
+          <a-form-item label='所属分类' v-bind="formItemLayout">
+            <a-checkbox-group
+              v-model="tagCheck"
+              :options="tagList"
+            />
+          </a-form-item>
+        </a-col>
+        <a-col :span="24">
+          <a-form-item label='贴子内容' v-bind="formItemLayout">
             <a-textarea :rows="6" v-decorator="[
             'content',
-             { rules: [{ required: true, message: '请输入备注!' }] }
+             { rules: [{ required: true, message: '请输入内容!' }] }
             ]"/>
           </a-form-item>
         </a-col>
         <a-col :span="24">
-          <a-form-item label='学生头像' v-bind="formItemLayout">
+          <a-form-item label='图册' v-bind="formItemLayout">
             <a-upload
               name="avatar"
               action="http://127.0.0.1:9527/file/fileUpload/"
@@ -82,8 +63,6 @@
 
 <script>
 import {mapState} from 'vuex'
-import moment from 'moment'
-moment.locale('zh-cn')
 function getBase64 (file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -97,10 +76,13 @@ const formItemLayout = {
   wrapperCol: { span: 24 }
 }
 export default {
-  name: 'studentAdd',
+  name: 'postAdd',
   props: {
-    studentAddVisiable: {
+    postAddVisiable: {
       default: false
+    },
+    tagList: {
+      type: Array
     }
   },
   computed: {
@@ -109,7 +91,7 @@ export default {
     }),
     show: {
       get: function () {
-        return this.studentAddVisiable
+        return this.postAddVisiable
       },
       set: function () {
       }
@@ -121,19 +103,12 @@ export default {
       form: this.$form.createForm(this),
       loading: false,
       fileList: [],
-      classesList: [],
       previewVisible: false,
-      previewImage: ''
+      previewImage: '',
+      tagCheck: []
     }
   },
-  mounted () {
-  },
   methods: {
-    selectClassesList () {
-      this.$get('/cos/classes-info/list').then((r) => {
-        this.classesList = r.data.data
-      })
-    },
     handleCancel () {
       this.previewVisible = false
     },
@@ -156,6 +131,10 @@ export default {
       this.$emit('close')
     },
     handleSubmit () {
+      if (this.tagCheck.length === 0) {
+        this.$message.error('需要选择所属分类！')
+        return
+      }
       // 获取图片List
       let images = []
       this.fileList.forEach(image => {
@@ -163,14 +142,20 @@ export default {
       })
       this.form.validateFields((err, values) => {
         values.images = images.length > 0 ? images.join(',') : null
-        values.birthday = moment(values.birthday).format('YYYY-MM-DD')
+        values.userId = this.currentUser.userId
+        values.tagIds = this.tagCheck.join(',')
         if (!err) {
+          values.publisher = this.currentUser.userId
           this.loading = true
-          this.$post('/cos/student-info', {
+          this.$post('/cos/post-info', {
             ...values
           }).then((r) => {
-            this.reset()
-            this.$emit('success')
+            if (r.data.code === 500) {
+              this.$message.error(r.data.msg)
+            } else {
+              this.reset()
+              this.$emit('success')
+            }
           }).catch(() => {
             this.loading = false
           })
