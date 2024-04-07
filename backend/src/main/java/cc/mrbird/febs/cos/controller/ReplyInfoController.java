@@ -2,14 +2,23 @@ package cc.mrbird.febs.cos.controller;
 
 
 import cc.mrbird.febs.common.utils.R;
+import cc.mrbird.febs.cos.entity.PostInfo;
 import cc.mrbird.febs.cos.entity.ReplyInfo;
+import cc.mrbird.febs.cos.entity.StudentInfo;
+import cc.mrbird.febs.cos.service.IPostInfoService;
 import cc.mrbird.febs.cos.service.IReplyInfoService;
+import cc.mrbird.febs.cos.service.IStudentInfoService;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.system.UserInfo;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -22,6 +31,10 @@ import java.util.List;
 public class ReplyInfoController {
 
     private final IReplyInfoService replyInfoService;
+
+    private final IPostInfoService postInfoService;
+
+    private final IStudentInfoService studentInfoService;
 
     /**
      * 分页获取消息回复信息
@@ -57,13 +70,30 @@ public class ReplyInfoController {
     }
 
     /**
-     * 新增消息回复信息
-     *
-     * @param replyInfo 消息回复信息
-     * @return 结果
+     * 获取具体的帖子回复信息
+     * @param postId
+     * @return
+     */
+    @GetMapping("/list/{id}")
+    public R replyListByPostId(@PathVariable(value = "id") Integer postId) {
+        PostInfo postInfo = postInfoService.getById(postId);
+        postInfoService.update(Wrappers.<PostInfo>lambdaUpdate().set(PostInfo::getPageviews, postInfo.getPageviews() + 1).eq(PostInfo::getId, postId));
+        return R.ok(replyInfoService.replyListByPostId(postId));
+    }
+
+    /**
+     * 添加回复信息
+     * @param replyInfo
+     * @return
      */
     @PostMapping
+    @Transactional(rollbackFor = Exception.class)
     public R save(ReplyInfo replyInfo) {
+        StudentInfo studentInfo = studentInfoService.getOne(Wrappers.<StudentInfo>lambdaQuery().eq(StudentInfo::getUserId, replyInfo.getUserId()));
+        replyInfo.setUserId(Long.valueOf(studentInfo.getId()));
+        // 获取贴子信息
+        PostInfo postInfo = postInfoService.getById(replyInfo.getPostId());
+        replyInfo.setDeleteFlag(0);
         replyInfo.setSendCreate(DateUtil.formatDateTime(new Date()));
         return R.ok(replyInfoService.save(replyInfo));
     }

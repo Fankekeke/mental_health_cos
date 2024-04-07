@@ -21,4 +21,11 @@ public interface IRecordInfoService extends IService<RecordInfo> {
      * @return 结果
      */
     IPage<LinkedHashMap<String, Object>> selectRecordPage(Page<RecordInfo> page, RecordInfo recordInfo);
+
+    /**
+     * 查询主页信息
+     *
+     * @return 结果
+     */
+    LinkedHashMap<String, Object> homeData();
 }

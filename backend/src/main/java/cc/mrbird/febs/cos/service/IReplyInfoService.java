@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * @author Fank gmail - fan1ke2ke@gmail.com
@@ -21,4 +22,7 @@ public interface IReplyInfoService extends IService<ReplyInfo> {
      * @return 结果
      */
     IPage<LinkedHashMap<String, Object>> selectReplyPage(Page<ReplyInfo> page, ReplyInfo replyInfo);
+
+    // 获取具体的帖子回复信息
+    List<LinkedHashMap<String, Object>> replyListByPostId(Integer postId);
 }

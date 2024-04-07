@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * @author Fank gmail - fan1ke2ke@gmail.com
@@ -26,5 +27,10 @@ public class ReplyInfoServiceImpl extends ServiceImpl<ReplyInfoMapper, ReplyInfo
     @Override
     public IPage<LinkedHashMap<String, Object>> selectReplyPage(Page<ReplyInfo> page, ReplyInfo replyInfo) {
         return baseMapper.selectReplyPage(page, replyInfo);
+    }
+
+    @Override
+    public List<LinkedHashMap<String, Object>> replyListByPostId(Integer postId) {
+        return baseMapper.replyListByPostId(postId);
     }
 }

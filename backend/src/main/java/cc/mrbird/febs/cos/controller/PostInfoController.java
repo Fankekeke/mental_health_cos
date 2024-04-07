@@ -36,14 +36,35 @@ public class PostInfoController {
     }
 
     /**
-     * 贴子信息详情
+     * 获取模块下的贴子
      *
-     * @param id 贴子ID
-     * @return 结果
+     * @param tagId
+     * @return
      */
-    @GetMapping("/{id}")
-    public R detail(@PathVariable("id") Integer id) {
-        return R.ok(postInfoService.getById(id));
+    @GetMapping("/tag/{tagId}")
+    public R getPostByTag(@PathVariable("tagId") Integer tagId) {
+        return R.ok(postInfoService.getPostByTag(tagId));
+    }
+
+    /**
+     * 获取贴子详细信息
+     *
+     * @param postId
+     * @return
+     */
+    @GetMapping("/{postId}")
+    public R postDetail(@PathVariable("postId") Integer postId) {
+        return R.ok(postInfoService.postDetail(postId));
+    }
+
+    /**
+     * 模糊查询帖子信息
+     *
+     * @return
+     */
+    @GetMapping("/list/{key}")
+    public R list(@PathVariable("key") String key) {
+        return R.ok(postInfoService.postByKey(key));
     }
 
     /**

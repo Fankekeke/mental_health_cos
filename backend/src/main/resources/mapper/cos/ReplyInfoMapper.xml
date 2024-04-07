@@ -33,4 +33,29 @@
         order by
         send_create desc
     </select>
+
+    <!-- 获取具体的帖子回复信息 -->
+    <select id="replyListByPostId" resultType="java.util.LinkedHashMap">
+        SELECT
+            ri.id,
+            ri.user_id AS userId,
+            ri.content,
+            ri.post_id AS postId,
+            ri.reply_user_id replyUserId,
+            ri.send_create AS sendCreate,
+            pi.title,
+            tu.name as username,
+            tu.images,
+            tu1.name as replyUserName
+        FROM
+            reply_info ri
+                LEFT JOIN post_info pi ON ( ri.post_id = pi.id )
+                LEFT JOIN student_info tu ON ( tu.id = ri.user_id )
+                LEFT JOIN student_info tu1 ON ( tu1.id = ri.reply_user_id )
+        WHERE
+            ri.delete_flag = 0
+          AND ri.post_id = #{ postId }
+        ORDER BY
+            ri.send_create ASC
+    </select>
 </mapper>

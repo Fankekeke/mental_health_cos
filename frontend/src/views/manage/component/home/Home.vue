@@ -7,11 +7,11 @@
             <a-col :span="6">
               <a-card hoverable>
                 <a-row>
-                  <a-col :span="24" style="font-size: 13px;margin-bottom: 8px;font-family: SimHei">本月收益/元</a-col>
+                  <a-col :span="24" style="font-size: 13px;margin-bottom: 8px;font-family: SimHei">本月发帖</a-col>
                   <a-col :span="4"><a-icon type="arrow-up" style="font-size: 30px;margin-top: 3px"/></a-col>
                   <a-col :span="18" style="font-size: 28px;font-weight: 500;font-family: SimHei">
                     {{ titleData.incomeMonth }}
-                    <span style="font-size: 20px;margin-top: 3px">元</span>
+                    <span style="font-size: 20px;margin-top: 3px">单</span>
                   </a-col>
                 </a-row>
               </a-card>
@@ -19,7 +19,7 @@
             <a-col :span="6">
               <a-card hoverable>
                 <a-row>
-                  <a-col :span="24" style="font-size: 13px;margin-bottom: 8px;font-family: SimHei">本月工单</a-col>
+                  <a-col :span="24" style="font-size: 13px;margin-bottom: 8px;font-family: SimHei">本月答题</a-col>
                   <a-col :span="4"><a-icon type="arrow-up" style="font-size: 30px;margin-top: 3px"/></a-col>
                   <a-col :span="18" style="font-size: 28px;font-weight: 500;font-family: SimHei">
                     {{ titleData.workOrderMonth }}
@@ -31,7 +31,7 @@
             <a-col :span="6">
               <a-card hoverable>
                 <a-row>
-                  <a-col :span="24" style="font-size: 13px;margin-bottom: 8px;font-family: SimHei">本年收益/元</a-col>
+                  <a-col :span="24" style="font-size: 13px;margin-bottom: 8px;font-family: SimHei">本年发帖</a-col>
                   <a-col :span="4"><a-icon type="arrow-up" style="font-size: 30px;margin-top: 3px"/></a-col>
                   <a-col :span="18" style="font-size: 28px;font-weight: 500;font-family: SimHei">
                     {{ titleData.incomeYear }}
@@ -43,7 +43,7 @@
             <a-col :span="6">
               <a-card hoverable>
                 <a-row>
-                  <a-col :span="24" style="font-size: 13px;margin-bottom: 8px;font-family: SimHei">本年工单</a-col>
+                  <a-col :span="24" style="font-size: 13px;margin-bottom: 8px;font-family: SimHei">本年答题</a-col>
                   <a-col :span="4"><a-icon type="arrow-up" style="font-size: 30px;margin-top: 3px"/></a-col>
                   <a-col :span="18" style="font-size: 28px;font-weight: 500;font-family: SimHei">
                     {{ titleData.workOrderYear }}
@@ -84,27 +84,27 @@
 <!--        </a-card>-->
 <!--      </a-col>-->
     </a-row>
-    <a-row style="margin-top: 15px">
-      <a-col :span="12">
-        <a-card hoverable :loading="loading" :bordered="false" title="公告信息" style="margin-top: 15px">
-          <div style="padding: 0 22px">
-            <a-list item-layout="vertical" :pagination="pagination" :data-source="bulletinList">
-              <a-list-item slot="renderItem" key="item.title" slot-scope="item, index">
-                <template slot="actions">
-              <span key="message">
-                <a-icon type="message" style="margin-right: 8px" />
-                {{ item.date }}
-              </span>
-                </template>
-                <a-list-item-meta :description="item.content" style="font-size: 14px">
-                  <a slot="title">{{ item.title }}</a>
-                </a-list-item-meta>
-              </a-list-item>
-            </a-list>
-          </div>
-        </a-card>
-      </a-col>
-    </a-row>
+<!--    <a-row style="margin-top: 15px">-->
+<!--      <a-col :span="12">-->
+<!--        <a-card hoverable :loading="loading" :bordered="false" title="公告信息" style="margin-top: 15px">-->
+<!--          <div style="padding: 0 22px">-->
+<!--            <a-list item-layout="vertical" :pagination="pagination" :data-source="bulletinList">-->
+<!--              <a-list-item slot="renderItem" key="item.title" slot-scope="item, index">-->
+<!--                <template slot="actions">-->
+<!--              <span key="message">-->
+<!--                <a-icon type="message" style="margin-right: 8px" />-->
+<!--                {{ item.date }}-->
+<!--              </span>-->
+<!--                </template>-->
+<!--                <a-list-item-meta :description="item.content" style="font-size: 14px">-->
+<!--                  <a slot="title">{{ item.title }}</a>-->
+<!--                </a-list-item-meta>-->
+<!--              </a-list-item>-->
+<!--            </a-list>-->
+<!--          </div>-->
+<!--        </a-card>-->
+<!--      </a-col>-->
+<!--    </a-row>-->
   </div>
 </template>
 
@@ -153,7 +153,7 @@ export default {
           enabled: false
         },
         title: {
-          text: '近十天收入统计',
+          text: '近十天发帖统计',
           align: 'left'
         },
         markers: {
@@ -169,7 +169,7 @@ export default {
           height: 300
         },
         title: {
-          text: '近十天工单统计',
+          text: '近十天答题统计',
           align: 'left'
         },
         plotOptions: {
@@ -277,8 +277,8 @@ export default {
   },
   methods: {
     selectHomeData () {
-      this.$get('/cos/park-order-info/home/data', {roleId: this.user.roleId, userId: this.user.userId}).then((r) => {
-        let titleData = { staffNum: r.data.staffNum, totalRevenue: r.data.totalRevenue, totalOrderNum: r.data.totalOrderNum, roomNum: r.data.roomNum }
+      this.$get('/cos/record-info/home/data', {roleId: this.user.roleId, userId: this.user.userId}).then((r) => {
+        let titleData = { studentNum: r.data.studentNum, examNum: r.data.examNum, teacherNum: r.data.teacherNum, examRecordNum: r.data.examRecordNum }
         this.$emit('setTitle', titleData)
         this.titleData.incomeMonth = r.data.incomeMonth
         this.titleData.workOrderMonth = r.data.workOrderMonth
@@ -286,6 +286,7 @@ export default {
         this.titleData.workOrderYear = r.data.workOrderYear
         this.bulletinList = r.data.bulletin
         let values = []
+        console.log(r.data.orderRecord)
         if (r.data.orderRecord !== null && r.data.orderRecord.length !== 0) {
           if (this.chartOptions1.xaxis.categories.length === 0) {
             this.chartOptions1.xaxis.categories = r.data.orderRecord.map(obj => { return obj.days })
@@ -294,12 +295,8 @@ export default {
           values.push(itemData)
           this.series1 = values
         }
-        this.series[0].data = r.data.paymentRecord.map(obj => { return obj.amount })
+        this.series[0].data = r.data.paymentRecord.map(obj => { return obj.count })
         this.chartOptions.xaxis.categories = r.data.paymentRecord.map(obj => { return obj.days })
-        if (r.data.orderRate.length !== 0) {
-          this.series2 = r.data.orderRate.map(obj => { return obj.count })
-          this.chartOptions2.labels = r.data.orderRate.map(obj => { return obj.name })
-        }
       })
     }
   }

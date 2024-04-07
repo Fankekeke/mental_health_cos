@@ -1,13 +1,12 @@
 <template>
   <a-card style="width: 100%" class="daily-article" :loading="loading">
     <template class="ant-card-actions" slot="actions">
-      <a-icon type="step-backward" @click="getPreArticle" class="article-button"/>
-      <a-icon type="step-forward" @click="getNextArticle" class="article-button"/>
+      <a-icon type="step-forward" @click="newsNext" class="article-button"/>
     </template>
     <a-card-meta
-      :title="article.title"
-      :description="article.date.curr + ' · ' + article.author + ' · 字数：' + article.wc"/>
-    <span v-html="article.content" class="article-content"></span>
+      :title="title"
+      :description="createBy"/>
+    <span v-html="newsContent" class="article-content" style="padding: 23px;font-family: SimHei;letter-spacing: 1px;"></span>
   </a-card>
 </template>
 <script>
@@ -22,10 +21,25 @@ export default {
         author: '',
         wc: ''
       },
-      today: ''
+      newsPage: 0,
+      today: '',
+      newsContent: '',
+      title: '',
+      createBy: '',
+      newsList: []
     }
   },
   methods: {
+    newsNext () {
+      if (this.newsPage + 1 === this.newsList.length) {
+        this.newsPage = 0
+      } else {
+        this.newsPage += 1
+      }
+      this.newsContent = `《${this.newsList[this.newsPage].title}》 ${this.newsList[this.newsPage].content}`
+      this.createBy = `${this.newsList[this.newsPage].createBy}`
+      this.title = `${this.newsList[this.newsPage].title}`
+    },
     getPreArticle () {
       this.getArticle(this.article.date.prev)
     },
@@ -37,17 +51,14 @@ export default {
       this.getArticle(this.article.date.next)
     },
     getArticle (date = '') {
-      this.$get('article?date=' + date).then((r) => {
+      this.$get('/cos/article-info/list').then((r) => {
         this.loading = false
-        let data = JSON.parse(r.data.data)
-        data = data.data
-        this.article = {...data}
-        if (date === '') {
-          this.today = this.article.date.curr
+        this.newsList = r.data.data
+        if (this.newsList.length !== 0) {
+          this.title = this.newsList[0].title
+          this.createBy = this.newsList[0].createBy
+          this.newsContent = `《${this.newsList[0].title}》 ${this.newsList[0].content}`
         }
-      }).catch((e) => {
-        console.error(e)
-        this.$message.error('获取每日文章失败')
       })
     }
   },

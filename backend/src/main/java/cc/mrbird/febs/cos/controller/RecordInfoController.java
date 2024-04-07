@@ -34,6 +34,16 @@ public class RecordInfoController {
     }
 
     /**
+     * 查询主页信息
+     *
+     * @return 结果
+     */
+    @GetMapping("/home/data")
+    public R homeData() {
+        return R.ok(recordInfoService.homeData());
+    }
+
+    /**
      * 考试记录信息详情
      *
      * @param id 考试记录选项ID
