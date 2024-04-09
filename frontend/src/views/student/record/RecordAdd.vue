@@ -107,7 +107,7 @@ export default {
       })
     },
     selectExamList () {
-      this.$get('/cos/exam-paper-info/list').then((r) => {
+      this.$get('/cos/exam-paper-info/list/check').then((r) => {
         this.examList = r.data.data
       })
     },

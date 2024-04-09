@@ -105,6 +105,16 @@ public class ExamPaperInfoController {
     }
 
     /**
+     * 试卷信息列表
+     *
+     * @return 结果
+     */
+    @GetMapping("/list/check")
+    public R listCheck() {
+        return R.ok(examPaperInfoService.list(Wrappers.<ExamPaperInfo>lambdaQuery().eq(ExamPaperInfo::getStatus, "1")));
+    }
+
+    /**
      * 新增试卷信息
      *
      * @param examPaperInfo 试卷信息
