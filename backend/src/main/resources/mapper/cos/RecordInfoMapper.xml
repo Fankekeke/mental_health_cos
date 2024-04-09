@@ -28,6 +28,9 @@
         <if test="recordInfo.exampaperName != null and recordInfo.exampaperName != ''">
             AND epi.exampaper_name LIKE CONCAT('%',#{recordInfo.exampaperName},'%')
         </if>
+        <if test="recordInfo.studentId != null and recordInfo.studentId != ''">
+            AND si.user_id = #{recordInfo.studentId}
+        </if>
         order by ri.end_date desc
     </select>
 

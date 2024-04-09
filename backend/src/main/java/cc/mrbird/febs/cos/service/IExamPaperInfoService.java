@@ -24,7 +24,7 @@ public interface IExamPaperInfoService extends IService<ExamPaperInfo> {
     IPage<LinkedHashMap<String, Object>> selectExamPaperPage(Page<ExamPaperInfo> page, ExamPaperInfo examPaperInfo);
 
     /**
-     * 导入专家信息列表
+     * 导入试卷信息列表
      *
      * @param file 文件
      * @return 结果
@@ -38,4 +38,12 @@ public interface IExamPaperInfoService extends IService<ExamPaperInfo> {
      * @return 结果
      */
     LinkedHashMap<String, Object> detail(Integer id);
+
+    /**
+     * 试卷答题提交
+     *
+     * @param option 答题信息
+     * @return 结构
+     */
+    boolean examTestCommit(String option, String userId);
 }

@@ -68,4 +68,7 @@ public class ReplyInfo implements Serializable {
 
     @TableField(exist = false)
     private String title;
+
+    @TableField(exist = false)
+    private String studentId;
 }

@@ -69,6 +69,9 @@ public class PostInfo implements Serializable {
     @TableField(exist = false)
     private String studentName;
 
+    @TableField(exist = false)
+    private String studentId;
+
     /**
      * 删除标识
      */

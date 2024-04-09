@@ -1,15 +1,13 @@
 package cc.mrbird.febs.cos.service.impl;
 
-import cc.mrbird.febs.cos.entity.ExamOptionInfo;
-import cc.mrbird.febs.cos.entity.ExamPaperInfo;
+import cc.mrbird.febs.cos.dao.RecordInfoMapper;
+import cc.mrbird.febs.cos.entity.*;
 import cc.mrbird.febs.cos.dao.ExamPaperInfoMapper;
-import cc.mrbird.febs.cos.entity.ExamResultInfo;
-import cc.mrbird.febs.cos.service.IExamOptionInfoService;
-import cc.mrbird.febs.cos.service.IExamPaperInfoService;
-import cc.mrbird.febs.cos.service.IExamResultInfoService;
+import cc.mrbird.febs.cos.service.*;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import cn.hutool.poi.excel.ExcelReader;
 import cn.hutool.poi.excel.ExcelUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -18,15 +16,14 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.*;
 
 /**
  * @author Fank gmail - fan1ke2ke@gmail.com
@@ -38,6 +35,11 @@ public class ExamPaperInfoServiceImpl extends ServiceImpl<ExamPaperInfoMapper, E
     private final IExamOptionInfoService examOptionInfoService;
 
     private final IExamResultInfoService examResultInfoService;
+
+    private final IStudentInfoService studentInfoService;
+
+    @Lazy
+    private final RecordInfoMapper recordInfoMapper;
 
     /**
      * 分页获取试卷信息
@@ -52,7 +54,7 @@ public class ExamPaperInfoServiceImpl extends ServiceImpl<ExamPaperInfoMapper, E
     }
 
     /**
-     * 导入专家信息列表
+     * 导入试卷信息列表
      *
      * @param file 文件
      * @return 结果
@@ -130,6 +132,71 @@ public class ExamPaperInfoServiceImpl extends ServiceImpl<ExamPaperInfoMapper, E
         List<ExamResultInfo> examResultInfoList = examResultInfoService.list(Wrappers.<ExamResultInfo>lambdaQuery().eq(ExamResultInfo::getPaperId, examPaperInfo.getId()));
         result.put("result", examResultInfoList);
         return result;
+    }
+
+    /**
+     * 试卷答题提交
+     *
+     * @param option 答题信息
+     * @return 结构
+     */
+    @Override
+    public boolean examTestCommit(String option, String userId) {
+        // 答题信息
+        List<ExamOptionInfo> optionInfoList = JSONUtil.toList(option, ExamOptionInfo.class);
+
+        // 试题信息
+        ExamPaperInfo examPaperInfo = this.getById(optionInfoList.get(0).getPaperId());
+
+        // 试题结果
+        List<ExamResultInfo> examResultList = examResultInfoService.list(Wrappers.<ExamResultInfo>lambdaQuery().eq(ExamResultInfo::getPaperId, examPaperInfo.getId()));
+
+        // 总分数
+        int total = 0;
+
+        for (ExamOptionInfo examOptionInfo : optionInfoList) {
+            List<String> contentOptionsList = Arrays.asList(StrUtil.split(examOptionInfo.getContentOptions(), ","));
+
+            List<String> scoreList = Arrays.asList(StrUtil.split(examOptionInfo.getScore(), ","));
+
+            if (StrUtil.isNotEmpty(examOptionInfo.getPickCheck())) {
+                if ("1".equals(examOptionInfo.getType())) {
+
+                    for (int i = 0; i < contentOptionsList.size(); i++) {
+                        if (contentOptionsList.get(i).equals(examOptionInfo.getPickCheck())) {
+                            total += Integer.parseInt(scoreList.get(i));
+                        }
+                    }
+
+                } else {
+                    if (examOptionInfo.getPickCheck().equals(examOptionInfo.getAnswer())) {
+                        total += Integer.parseInt(examOptionInfo.getScore());
+                    } else {
+                        total += 0;
+                    }
+                }
+            }
+        }
+
+        // 学生信息
+        StudentInfo studentInfo = studentInfoService.getOne(Wrappers.<StudentInfo>lambdaQuery().eq(StudentInfo::getUserId, userId));
+
+        // 结果
+        String result = "";
+        for (ExamResultInfo examResultInfo : examResultList) {
+            if (examResultInfo.getScoreStart() <= total && examResultInfo.getScoreEnd() > total) {
+                result = examResultInfo.getTitle();
+            }
+        }
+
+        // 答题结果
+        RecordInfo recordInfo = new RecordInfo();
+        recordInfo.setStudentId(studentInfo.getId());
+        recordInfo.setExamId(examPaperInfo.getId());
+        recordInfo.setScore(BigDecimal.valueOf(total));
+        recordInfo.setEndDate(DateUtil.formatDateTime(new Date()));
+        recordInfo.setRemark(result);
+        return recordInfoMapper.insert(recordInfo) >= 1;
     }
 
     /**

@@ -56,7 +56,18 @@ public class ExamPaperInfoController {
     }
 
     /**
-     * 导入专家信息列表
+     * 试卷答题提交
+     *
+     * @param option 答题信息
+     * @return 结构
+     */
+    @PostMapping("/examTestCommit")
+    public R examTestCommit(String option, String userId) {
+        return R.ok(examPaperInfoService.examTestCommit(option, userId));
+    }
+
+    /**
+     * 导入试卷信息列表
      */
     @PostMapping("/import")
     public R importExcel(@RequestParam("file") MultipartFile file) {

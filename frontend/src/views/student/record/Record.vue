@@ -73,29 +73,47 @@
         </template>
       </a-table>
     </div>
+    <exam-add
+      v-if="examAdd.visiable"
+      @close="handleexamAddClose"
+      @success="handleexamAddSuccess"
+      :bulletinAddVisiable="examAdd.visiable">
+    </exam-add>
     <exam-view
       @close="handleexamViewClose"
       :examShow="examView.visiable"
       :examData="examView.data">
     </exam-view>
+    <record-Map
+      @close="handleorderMapViewClose"
+      @success="handleorderMapViewSuccess"
+      :orderShow="orderMapView.visiable"
+      :orderData="orderMapView.data">
+    </record-Map>
   </a-card>
 </template>
 
 <script>
 import RangeDate from '@/components/datetime/RangeDate'
+import examAdd from './RecordAdd.vue'
 import examView from './RecordView.vue'
+import recordMap from './RecordMap.vue'
 import {mapState} from 'vuex'
 import moment from 'moment'
 moment.locale('zh-cn')
 
 export default {
   name: 'exam',
-  components: {RangeDate, examView},
+  components: {RangeDate, examView, examAdd, recordMap},
   data () {
     return {
       advanced: false,
       examAdd: {
         visiable: false
+      },
+      orderMapView: {
+        visiable: false,
+        data: null
       },
       examEdit: {
         visiable: false
@@ -179,6 +197,14 @@ export default {
     this.fetch()
   },
   methods: {
+    handleorderMapViewClose () {
+      this.orderMapView.visiable = false
+    },
+    handleorderMapViewSuccess () {
+      this.orderMapView.visiable = false
+      this.$message.success('提交成功')
+      this.search()
+    },
     audit (id, status) {
       this.$get('/cos/exam-paper-info/audit', {id: id, status}).then((r) => {
         this.$message.success('修改成功')
@@ -204,10 +230,10 @@ export default {
     handleexamAddClose () {
       this.examAdd.visiable = false
     },
-    handleexamAddSuccess () {
+    handleexamAddSuccess (examId) {
       this.examAdd.visiable = false
-      this.$message.success('新增试卷成功')
-      this.search()
+      this.orderMapView.data = {examId}
+      this.orderMapView.visiable = true
     },
     edit (record) {
       this.$refs.examEdit.setFormValues(record)
@@ -306,6 +332,7 @@ export default {
         params.size = this.pagination.defaultPageSize
         params.current = this.pagination.defaultCurrent
       }
+      params.studentId = this.currentUser.userId
       this.$get('/cos/record-info/page', {
         ...params
       }).then((r) => {

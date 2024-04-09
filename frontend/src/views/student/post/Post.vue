@@ -339,6 +339,7 @@ export default {
       if (params.tagId === undefined) {
         delete params.tagId
       }
+      params.studentId = this.currentUser.userId
       this.$get('/cos/post-info/page', {
         ...params
       }).then((r) => {

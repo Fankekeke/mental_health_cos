@@ -251,6 +251,7 @@ export default {
         params.size = this.pagination.defaultPageSize
         params.current = this.pagination.defaultCurrent
       }
+      params.studentId = this.currentUser.userId
       this.$get('/cos/reply-info/page', {
         ...params
       }).then((r) => {

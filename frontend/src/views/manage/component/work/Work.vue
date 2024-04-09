@@ -15,7 +15,7 @@
     <br/>
     <br/>
     <a-row :gutter="8" class="count-info">
-      <a-card class="head-info-card" style="width: 100%;margin: 0 auto">
+      <a-card class="head-info-card" style="width: 100%;margin: 0 auto;margin-top: 50px">
         <a-row>
           <a-col :span="24">
             <a-input-search placeholder="搜索贴子" v-show="!postDetailShow" style="width: 200px;margin-top: 10px;float: right" @search="onSearch" />
@@ -31,10 +31,6 @@
                     <span key="message">
                       <a-icon type="message" style="margin-right: 8px" />
                       <span>{{ item.reply }}</span> 回复
-                    </span>
-                    <span key="star">
-                      <a-icon type="star" style="margin-right: 8px" />
-                      {{ item.collect }} 收藏
                     </span>
                     <span key="to-top">
                       <a-icon type="to-top" style="margin-right: 8px" />
@@ -149,12 +145,14 @@ export default {
       form: this.$form.createForm(this),
       formItemLayout,
       visible: false,
+      newsContent: '',
       statusList: [],
       vehicleList: [],
       loading: false,
       userInfo: null,
       memberInfo: null,
       spaceInfo: null,
+      newsPage: 0,
       newsList: [],
       tagListData: [],
       postList: [],
@@ -189,7 +187,7 @@ export default {
   },
   mounted () {
     this.getTagList()
-    this.getNewList()
+    this.getBulletinList()
   },
   methods: {
     timeFormat (time) {
@@ -319,7 +317,7 @@ export default {
     },
     getTagList () {
       this.$get('/cos/tag-info/list').then((r) => {
-        this.tagList = [{id: -1, name: '推荐'}]
+        this.tagList = []
         this.tagList.push.apply(this.tagList, r.data.data)
         console.log(this.tagList)
         if (this.tagList.length !== 0) {
@@ -330,6 +328,14 @@ export default {
           tagListData.push({label: item.name, value: item.id})
         })
         this.tagListData = tagListData
+      })
+    },
+    getBulletinList () {
+      this.$get('/cos/bulletin-info/list').then((r) => {
+        this.newsList = r.data.data
+        if (this.newsList.length !== 0) {
+          this.newsContent = `《${this.newsList[0].title}》 ${this.newsList[0].content}`
+        }
       })
     },
     newsNext () {
