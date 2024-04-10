@@ -1,5 +1,5 @@
 <template>
-  <a-modal v-model="show" title="试卷详情" @cancel="onClose" :width="1000">
+  <a-modal v-model="show" title="考试记录详情" @cancel="onClose" :width="1000">
     <template slot="footer">
       <a-button key="back" @click="onClose" type="danger">
         关闭
@@ -11,21 +11,20 @@
         <a-col :span="8"><b>试卷名称：</b>
           {{ examData.exampaperName ? examData.exampaperName : '- -' }}
         </a-col>
-        <a-col :span="8"><b>试卷编号：</b>
-          {{ examData.code ? examData.code : '- -' }}
+        <a-col :span="8"><b>学生姓名：</b>
+          {{ examData.studentName ? examData.studentName : '- -' }}
         </a-col>
-        <a-col :span="8"><b>状态：</b>
-          <span v-if="examData.status == 0" style="color: red">下架</span>
-          <span v-if="examData.status == 1" style="color: green">正常</span>
+        <a-col :span="8"><b>结果：</b>
+          {{ examData.remark ? examData.remark : '- -' }}
         </a-col>
       </a-row>
       <br/>
       <a-row style="padding-left: 24px;padding-right: 24px;">
-        <a-col :span="8"><b>创建时间：</b>
-          {{ examData.createDate ? examData.createDate : '- -' }}
+        <a-col :span="8"><b>答题时间：</b>
+          {{ examData.endDate ? examData.endDate : '- -' }}
         </a-col>
-        <a-col :span="8"><b>备注：</b>
-          {{ examData.content ? examData.content : '- -' }}
+        <a-col :span="8"><b>分数：</b>
+          {{ examData.score ? examData.score : '- -' }}
         </a-col>
       </a-row>
       <br/>
