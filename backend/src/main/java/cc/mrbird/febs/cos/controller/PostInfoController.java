@@ -3,8 +3,11 @@ package cc.mrbird.febs.cos.controller;
 
 import cc.mrbird.febs.common.utils.R;
 import cc.mrbird.febs.cos.entity.PostInfo;
+import cc.mrbird.febs.cos.entity.StudentInfo;
 import cc.mrbird.febs.cos.service.IPostInfoService;
+import cc.mrbird.febs.cos.service.IStudentInfoService;
 import cn.hutool.core.date.DateUtil;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +25,8 @@ import java.util.List;
 public class PostInfoController {
 
     private final IPostInfoService postInfoService;
+
+    private final IStudentInfoService studentInfoService;
 
     /**
      * 分页获取贴子信息
@@ -85,6 +90,13 @@ public class PostInfoController {
      */
     @PostMapping
     public R save(PostInfo postInfo) {
+        // 获取学生信息
+        StudentInfo studentInfo = studentInfoService.getOne(Wrappers.<StudentInfo>lambdaQuery().eq(StudentInfo::getUserId, postInfo.getUserId()));
+        if (studentInfo != null) {
+            postInfo.setUserId(Long.valueOf(studentInfo.getId()));
+        }
+        postInfo.setPageviews(0);
+        postInfo.setDeleteFlag(0);
         postInfo.setCreateDate(DateUtil.formatDateTime(new Date()));
         return R.ok(postInfoService.save(postInfo));
     }
