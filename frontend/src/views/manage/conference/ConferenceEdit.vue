@@ -1,5 +1,5 @@
 <template>
-  <a-modal v-model="show" title="修改车辆" @cancel="onClose" :width="1200">
+  <a-modal v-model="show" title="修改活动" @cancel="onClose" :width="800">
     <template slot="footer">
       <a-button key="back" @click="onClose">
         取消
@@ -10,58 +10,68 @@
     </template>
     <a-form :form="form" layout="vertical">
       <a-row :gutter="20">
-        <a-col :span="6">
-          <a-form-item label='车牌号' v-bind="formItemLayout">
+        <a-col :span="12">
+          <a-form-item label='活动标题' v-bind="formItemLayout">
             <a-input v-decorator="[
-            'vehicleNumber',
-            { rules: [{ required: true, message: '请输入车牌号!' }] }
+            'title',
+            { rules: [{ required: true, message: '请输入活动标题!' }] }
             ]"/>
           </a-form-item>
         </a-col>
-        <a-col :span="6">
-          <a-form-item label='车辆名称' v-bind="formItemLayout">
+        <a-col :span="12">
+          <a-form-item label='活动地址' v-bind="formItemLayout">
             <a-input v-decorator="[
-            'name',
-            { rules: [{ required: true, message: '请输入名称!' }] }
+            'address',
+            { rules: [{ required: true, message: '请输入活动地址!' }] }
             ]"/>
           </a-form-item>
         </a-col>
-        <a-col :span="6">
-          <a-form-item label='车辆颜色' v-bind="formItemLayout">
+        <a-col :span="12">
+          <a-form-item label='主办方' v-bind="formItemLayout">
             <a-input v-decorator="[
-            'vehicleColor'
+            'organizer',
+            { rules: [{ required: true, message: '请输入主办方!' }] }
             ]"/>
           </a-form-item>
         </a-col>
-        <a-col :span="6">
-          <a-form-item label='发动机号码' v-bind="formItemLayout">
-            <a-input v-decorator="[
-            'engineNo'
-            ]"/>
-          </a-form-item>
-        </a-col>
-        <a-col :span="6">
-          <a-form-item label='排放标准' v-bind="formItemLayout">
-            <a-input v-decorator="[
-            'emissionStandard'
-            ]"/>
-          </a-form-item>
-        </a-col>
-        <a-col :span="6">
-          <a-form-item label='燃料类型' v-bind="formItemLayout">
+        <a-col :span="12">
+          <a-form-item label='活动特性' v-bind="formItemLayout">
             <a-select v-decorator="[
-              'fuelType',
-              { rules: [{ required: true, message: '请输入燃料类型!' }] }
+              'status',
+              { rules: [{ required: true, message: '请输入活动特性!' }] }
               ]">
-              <a-select-option value="1">燃油</a-select-option>
-              <a-select-option value="2">柴油</a-select-option>
-              <a-select-option value="3">油电混动</a-select-option>
-              <a-select-option value="4">电能</a-select-option>
+              <a-select-option value="宣传">宣传</a-select-option>
+              <a-select-option value="公益">公益</a-select-option>
+              <a-select-option value="环保">环保</a-select-option>
             </a-select>
           </a-form-item>
         </a-col>
+        <a-col :span="12">
+          <a-form-item label='开始时间' v-bind="formItemLayout">
+            <a-date-picker show-time format="YYYY-MM-DD HH:mm:ss" style="width: 100%" v-decorator="[
+            'startTime',
+            { rules: [{ required: true, message: '请输入开始时间!' }] }
+            ]"/>
+          </a-form-item>
+        </a-col>
+        <a-col :span="12">
+          <a-form-item label='结束时间' v-bind="formItemLayout">
+            <a-date-picker show-time format="YYYY-MM-DD HH:mm:ss" style="width: 100%" v-decorator="[
+            'endTime',
+            { rules: [{ required: true, message: '请输入结束时间!' }] }
+            ]"/>
+          </a-form-item>
+        </a-col>
         <a-col :span="24">
-          <a-form-item label='照片' v-bind="formItemLayout">
+          <a-form-item label='活动内容' v-bind="formItemLayout">
+            <a-textarea :rows="6" v-decorator="[
+            'content',
+             { rules: [{ required: true, message: '请输入活动内容!' }] }
+            ]"/>
+          </a-form-item>
+        </a-col>
+        <a-col :span="24">
+          <a-form-item label='图册' v-bind="formItemLayout">
             <a-upload
               name="avatar"
               action="http://127.0.0.1:9527/file/fileUpload/"
@@ -70,7 +80,7 @@
               @preview="handlePreview"
               @change="picHandleChange"
             >
-              <div v-if="fileList.length < 2">
+              <div v-if="fileList.length < 8">
                 <a-icon type="plus" />
                 <div class="ant-upload-text">
                   Upload
@@ -82,13 +92,6 @@
             </a-modal>
           </a-form-item>
         </a-col>
-        <a-col :span="24">
-          <a-form-item label='备注' v-bind="formItemLayout">
-            <a-textarea :rows="6" v-decorator="[
-            'content'
-            ]"/>
-          </a-form-item>
-        </a-col>
       </a-row>
     </a-form>
   </a-modal>
@@ -97,7 +100,6 @@
 <script>
 import {mapState} from 'vuex'
 import moment from 'moment'
-moment.locale('zh-cn')
 function getBase64 (file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -111,9 +113,9 @@ const formItemLayout = {
   wrapperCol: { span: 24 }
 }
 export default {
-  name: 'vehicleEdit',
+  name: 'dishesEdit',
   props: {
-    vehicleEditVisiable: {
+    dishesEditVisiable: {
       default: false
     }
   },
@@ -123,7 +125,7 @@ export default {
     }),
     show: {
       get: function () {
-        return this.vehicleEditVisiable
+        return this.dishesEditVisiable
       },
       set: function () {
       }
@@ -135,22 +137,19 @@ export default {
       formItemLayout,
       form: this.$form.createForm(this),
       loading: false,
-      formLoading: false,
+      staffIds: [],
+      staffList: [],
       fileList: [],
       previewVisible: false,
-      previewImage: '',
-      shopList: [],
-      vehicleTypeList: [],
-      brandList: []
+      previewImage: ''
     }
   },
   mounted () {
-    this.selectShopList()
   },
   methods: {
-    selectShopList () {
-      this.$get(`/cos/user-info/list`).then((r) => {
-        this.shopList = r.data.data
+    getStaffList () {
+      this.$get('/cos/staff-info/queryStaffList', {enterpriseId: 13}).then((r) => {
+        this.staffList = r.data.data
       })
     },
     handleCancel () {
@@ -175,41 +174,31 @@ export default {
         this.fileList = imageList
       }
     },
-    responsibleInit (responsible) {
-      this.formLoading = false
-      if (responsible !== null && responsible !== '') {
-        let responsibleList = []
-        responsible.split(',').forEach((id, index) => {
-          responsibleList.push(parseInt(id))
-        })
-        this.checkedList = responsibleList
-        console.log(JSON.stringify(this.checkedList))
-        this.onChange(this.checkedList)
-      }
-      setTimeout(() => {
-        this.formLoading = true
-      }, 200)
-    },
-    setFormValues ({...vehicle}) {
-      this.rowId = vehicle.id
-      let fields = ['vehicleNo', 'vehicleNumber', 'vehicleColor', 'name', 'engineNo', 'carryPassengers', 'principal', 'brand', 'phone', 'userId', 'factoryDate', 'useType', 'emissionStandard', 'fuelType', 'content', 'shopId', 'dayPrice']
+    setFormValues ({...dishes}) {
+      this.rowId = dishes.id
+      let fields = ['title', 'content', 'address', 'startTime', 'endTime', 'staffIds', 'organizer', 'status']
       let obj = {}
-      Object.keys(vehicle).forEach((key) => {
-        setTimeout(() => {
-          if (key === 'userId') {
-            vehicle[key] = vehicle[key].toString()
-          }
-        }, 200)
-        if (key === 'factoryDate' && vehicle[key] != null) {
-          vehicle[key] = moment(vehicle[key])
-        }
+      Object.keys(dishes).forEach((key) => {
         if (key === 'images') {
           this.fileList = []
-          this.imagesInit(vehicle['images'])
+          this.imagesInit(dishes['images'])
+        }
+        if (key === 'startTime') {
+          dishes[key] = moment(dishes[key])
+        }
+        if (key === 'endTime') {
+          dishes[key] = moment(dishes[key])
+        }
+        if (key === 'staffIds') {
+          setTimeout(() => {
+            dishes['staffIdList'] = dishes[key].split(',').map(Number)
+            // this.staffIds = dishes[key].split(',')
+            console.log(dishes['staffIdList'])
+          }, 500)
         }
         if (fields.indexOf(key) !== -1) {
           this.form.getFieldDecorator(key)
-          obj[key] = vehicle[key]
+          obj[key] = dishes[key]
         }
       })
       this.form.setFieldsValue(obj)
@@ -235,12 +224,15 @@ export default {
       this.form.validateFields((err, values) => {
         values.id = this.rowId
         values.images = images.length > 0 ? images.join(',') : null
+        if (values.startTime) {
+          values.startTime = moment(values.startTime).format('YYYY-MM-DD HH:mm:ss')
+        }
+        if (values.endTime) {
+          values.endTime = moment(values.endTime).format('YYYY-MM-DD HH:mm:ss')
+        }
         if (!err) {
-          if (values.factoryDate) {
-            values.factoryDate = moment(values.factoryDate).format('YYYY-MM-DD')
-          }
           this.loading = true
-          this.$put('/cos/vehicle-info', {
+          this.$put('/cos/conference-info', {
             ...values
           }).then((r) => {
             this.reset()

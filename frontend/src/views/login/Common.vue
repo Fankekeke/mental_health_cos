@@ -3,7 +3,7 @@
     <div class="content" style="margin: 0 auto">
       <div class="top">
         <div class="header">
-          <span class="title" style="color: white">高校心理健康调查系统</span>
+<!--          <span class="title" style="color: #4b4949">高校心理健康调查系统</span>-->
         </div>
         <div class="desc"></div>
       </div>
@@ -48,8 +48,8 @@ export default {
     flex-direction: column;
     height: 100vh;
     overflow: auto;
-    background: rgb(234, 234, 234) url(../../../static/img/house.jpg) no-repeat center ;
-    background-size: cover;
+    background: #ffffff url(../../../static/img/house.jpg) no-repeat center ;
+    background-size: contain;
     .content {
       padding: 32px 0;
       flex: 1;

@@ -7,18 +7,26 @@
           <div :class="advanced ? null: 'fold'">
             <a-col :md="6" :sm="24">
               <a-form-item
-                label="车牌号码"
+                label="活动标题"
                 :labelCol="{span: 5}"
                 :wrapperCol="{span: 18, offset: 1}">
-                <a-input v-model="queryParams.vehicleNumber"/>
+                <a-input v-model="queryParams.title"/>
               </a-form-item>
             </a-col>
             <a-col :md="6" :sm="24">
               <a-form-item
-                label="所属用户"
+                label="活动地址"
                 :labelCol="{span: 5}"
                 :wrapperCol="{span: 18, offset: 1}">
-                <a-input v-model="queryParams.userName"/>
+                <a-input v-model="queryParams.address"/>
+              </a-form-item>
+            </a-col>
+            <a-col :md="6" :sm="24">
+              <a-form-item
+                label="举办人"
+                :labelCol="{span: 5}"
+                :wrapperCol="{span: 18, offset: 1}">
+                <a-input v-model="queryParams.staffName"/>
               </a-form-item>
             </a-col>
           </div>
@@ -44,64 +52,54 @@
                :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
                :scroll="{ x: 900 }"
                @change="handleTableChange">
-        <template slot="titleShow" slot-scope="text, record">
-          <template>
-            <a-tooltip>
-              <template slot="title">
-                {{ record.title }}
-              </template>
-              {{ record.title.slice(0, 8) }} ...
-            </a-tooltip>
-          </template>
-        </template>
         <template slot="operation" slot-scope="text, record">
-          <a-icon type="setting" theme="twoTone" twoToneColor="#4a9ff5" @click="edit(record)" title="修 改" style="margin-left: 15px"></a-icon>
-          <a-icon type="file-search" @click="handlevehicleViewOpen(record)" title="详 情" style="margin-left: 15px"></a-icon>
+          <a-icon type="enter" @click="audit(record)" title="预 约"></a-icon>
+          <a-icon type="file-search" @click="dishesViewOpen(record)" title="详 情" style="margin-left: 15px"></a-icon>
         </template>
       </a-table>
     </div>
-    <vehicle-add
-      v-if="vehicleAdd.visiable"
-      @close="handlevehicleAddClose"
-      @success="handlevehicleAddSuccess"
-      :vehicleAddVisiable="vehicleAdd.visiable">
-    </vehicle-add>
-    <vehicle-edit
-      ref="vehicleEdit"
-      @close="handlevehicleEditClose"
-      @success="handlevehicleEditSuccess"
-      :vehicleEditVisiable="vehicleEdit.visiable">
-    </vehicle-edit>
-    <vehicle-view
-      @close="handlevehicleViewClose"
-      :vehicleShow="vehicleView.visiable"
-      :vehicleData="vehicleView.data">
-    </vehicle-view>
+    <dishes-add
+      v-if="dishesAdd.visiable"
+      @close="handledishesAddClose"
+      @success="handledishesAddSuccess"
+      :dishesAddVisiable="dishesAdd.visiable">
+    </dishes-add>
+    <dishes-edit
+      ref="dishesEdit"
+      @close="handledishesEditClose"
+      @success="handledishesEditSuccess"
+      :dishesEditVisiable="dishesEdit.visiable">
+    </dishes-edit>
+    <dishes-view
+      @close="handledishesViewClose"
+      :dishesShow="dishesView.visiable"
+      :dishesData="dishesView.data">
+    </dishes-view>
   </a-card>
 </template>
 
 <script>
 import RangeDate from '@/components/datetime/RangeDate'
-import vehicleAdd from './VehicleAdd'
-import vehicleEdit from './VehicleEdit'
-import vehicleView from './VehicleView'
+import dishesAdd from './ConferenceAdd.vue'
+import dishesEdit from './ConferenceEdit.vue'
+import dishesView from './ConferenceView.vue'
 import {mapState} from 'vuex'
 import moment from 'moment'
 moment.locale('zh-cn')
 
 export default {
-  name: 'vehicle',
-  components: {vehicleAdd, vehicleEdit, vehicleView, RangeDate},
+  name: 'dishes',
+  components: {dishesAdd, dishesEdit, dishesView, RangeDate},
   data () {
     return {
       advanced: false,
-      vehicleAdd: {
+      dishesAdd: {
         visiable: false
       },
-      vehicleEdit: {
+      dishesEdit: {
         visiable: false
       },
-      vehicleView: {
+      dishesView: {
         visiable: false,
         data: null
       },
@@ -120,7 +118,7 @@ export default {
         showSizeChanger: true,
         showTotal: (total, range) => `显示 ${range[0]} ~ ${range[1]} 条记录，共 ${total} 条记录`
       },
-      brandList: []
+      userList: []
     }
   },
   computed: {
@@ -129,26 +127,21 @@ export default {
     }),
     columns () {
       return [{
-        title: '车辆编号',
-        dataIndex: 'vehicleNo'
+        title: '主办方',
+        ellipsis: true,
+        dataIndex: 'organizer'
       }, {
-        title: '车牌号码',
-        dataIndex: 'vehicleNumber'
-      }, {
-        title: '车辆名称',
-        dataIndex: 'name'
-      }, {
-        title: '发动机编号',
-        dataIndex: 'engineNo',
+        title: '活动特性',
+        dataIndex: 'status',
         customRender: (text, row, index) => {
-          if (text !== null) {
-            return text
-          } else {
-            return '- -'
-          }
+          return <a-tag>{{ text }}</a-tag>
         }
       }, {
-        title: '照片',
+        title: '活动标题',
+        ellipsis: true,
+        dataIndex: 'title'
+      }, {
+        title: '活动图片',
         dataIndex: 'images',
         customRender: (text, record, index) => {
           if (!record.images) return <a-avatar shape="square" icon="user" />
@@ -160,25 +153,13 @@ export default {
           </a-popover>
         }
       }, {
-        title: '燃料类型',
-        dataIndex: 'fuelType',
-        customRender: (text, row, index) => {
-          switch (text) {
-            case '1':
-              return <a-tag>燃油</a-tag>
-            case '2':
-              return <a-tag>柴油</a-tag>
-            case '3':
-              return <a-tag>油电混动</a-tag>
-            case '4':
-              return <a-tag>电能</a-tag>
-            default:
-              return '- -'
-          }
-        }
+        title: '活动内容',
+        ellipsis: true,
+        dataIndex: 'content'
       }, {
-        title: '所属用户',
-        dataIndex: 'userName',
+        title: '开始时间',
+        ellipsis: true,
+        dataIndex: 'startTime',
         customRender: (text, row, index) => {
           if (text !== null) {
             return text
@@ -187,8 +168,8 @@ export default {
           }
         }
       }, {
-        title: '联系电话',
-        dataIndex: 'phone',
+        title: '结束时间',
+        dataIndex: 'endTime',
         customRender: (text, row, index) => {
           if (text !== null) {
             return text
@@ -217,23 +198,21 @@ export default {
     this.fetch()
   },
   methods: {
-    handlevehicleViewClose () {
-      this.vehicleView.visiable = false
-    },
-    handlevehicleViewOpen (row) {
-      this.vehicleView.data = row
-      this.vehicleView.visiable = true
-    },
-    selectShopList () {
-      this.$get(`/cos/brand-info/list`).then((r) => {
-        this.brandList = r.data.data
+    audit (row) {
+      this.$post('/cos/audit-info', {
+        conferenceId: row.id,
+        ownerId: this.currentUser.userId
+      }).then((r) => {
+        this.$message.success('活动预约成功，请等待审核')
+        this.search()
       })
     },
-    editStatus (row, status) {
-      this.$post('/cos/vehicle-info/account/status', { vehicleId: row.id, status }).then((r) => {
-        this.$message.success('修改成功')
-        this.fetch()
-      })
+    dishesViewOpen (row) {
+      this.dishesView.data = row
+      this.dishesView.visiable = true
+    },
+    handledishesViewClose () {
+      this.dishesView.visiable = false
     },
     onSelectChange (selectedRowKeys) {
       this.selectedRowKeys = selectedRowKeys
@@ -242,26 +221,26 @@ export default {
       this.advanced = !this.advanced
     },
     add () {
-      this.vehicleAdd.visiable = true
+      this.dishesAdd.visiable = true
     },
-    handlevehicleAddClose () {
-      this.vehicleAdd.visiable = false
+    handledishesAddClose () {
+      this.dishesAdd.visiable = false
     },
-    handlevehicleAddSuccess () {
-      this.vehicleAdd.visiable = false
-      this.$message.success('新增车辆成功')
+    handledishesAddSuccess () {
+      this.dishesAdd.visiable = false
+      this.$message.success('新增活动成功')
       this.search()
     },
     edit (record) {
-      this.$refs.vehicleEdit.setFormValues(record)
-      this.vehicleEdit.visiable = true
+      this.$refs.dishesEdit.setFormValues(record)
+      this.dishesEdit.visiable = true
     },
-    handlevehicleEditClose () {
-      this.vehicleEdit.visiable = false
+    handledishesEditClose () {
+      this.dishesEdit.visiable = false
     },
-    handlevehicleEditSuccess () {
-      this.vehicleEdit.visiable = false
-      this.$message.success('修改车辆成功')
+    handledishesEditSuccess () {
+      this.dishesEdit.visiable = false
+      this.$message.success('修改活动成功')
       this.search()
     },
     handleDeptChange (value) {
@@ -279,7 +258,7 @@ export default {
         centered: true,
         onOk () {
           let ids = that.selectedRowKeys.join(',')
-          that.$delete('/cos/vehicle-info/' + ids).then(() => {
+          that.$delete('/cos/conference-info/' + ids).then(() => {
             that.$message.success('删除成功')
             that.selectedRowKeys = []
             that.search()
@@ -349,11 +328,8 @@ export default {
         params.size = this.pagination.defaultPageSize
         params.current = this.pagination.defaultCurrent
       }
-      if (params.brand === undefined) {
-        delete params.brand
-      }
-      params.userId = this.currentUser.userId
-      this.$get('/cos/vehicle-info/page', {
+      params.enterpriseId = this.currentUser.userId
+      this.$get('/cos/conference-info/page', {
         ...params
       }).then((r) => {
         let data = r.data.data

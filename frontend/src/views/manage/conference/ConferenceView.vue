@@ -1,51 +1,47 @@
 <template>
-  <a-modal v-model="show" title="车位预约详情" @cancel="onClose" :width="800">
+  <a-modal v-model="show" title="活动详情" @cancel="onClose" :width="1000">
     <template slot="footer">
       <a-button key="back" @click="onClose" type="danger">
         关闭
       </a-button>
     </template>
-    <div style="font-size: 13px;font-family: SimHei" v-if="reserveData !== null">
+    <div style="font-size: 13px;font-family: SimHei" v-if="dishesData !== null">
       <a-row style="padding-left: 24px;padding-right: 24px;">
         <a-col style="margin-bottom: 15px"><span style="font-size: 15px;font-weight: 650;color: #000c17">基础信息</span></a-col>
-        <a-col :span="8"><b>用户编号：</b>
-          {{ reserveData.code ? reserveData.code : '- -' }}
+        <a-col :span="8"><b>举办人：</b>
+          {{ dishesData.staffName }}
         </a-col>
-        <a-col :span="8"><b>用户名称：</b>
-          {{ reserveData.name ? reserveData.name : '- -' }}
+        <a-col :span="8"><b>活动主题：</b>
+          {{ dishesData.title ? dishesData.title : '- -' }}
         </a-col>
-        <a-col :span="8"><b>联系方式：</b>
-          {{ reserveData.phone }}
-        </a-col>
-      </a-row>
-      <br/>
-      <a-row style="padding-left: 24px;padding-right: 24px;">
-        <a-col :span="8"><b>预约开始时间：</b>
-          {{ reserveData.startDate }}
-        </a-col>
-        <a-col :span="8"><b>预约开始时间：</b>
-          {{ reserveData.endDate }}
-        </a-col>
-        <a-col :span="8"><b>会员等级：</b>
-          <span v-if="reserveData.status == 0" style="color: red">结束</span>
-          <span v-if="reserveData.status == 1" style="color: green">预约中</span>
+        <a-col :span="8"><b>活动地址：</b>
+          {{ dishesData.address ? dishesData.address : '- -' }}
         </a-col>
       </a-row>
       <br/>
       <a-row style="padding-left: 24px;padding-right: 24px;">
-        <a-col :span="8"><b>车位名称：</b>
-          {{ reserveData.spaceName }}
+        <a-col :span="8"><b>开始时间：</b>
+          {{ dishesData.startTime }}
         </a-col>
-        <a-col :span="8"><b>车牌号码：</b>
-          {{ reserveData.vehicleNumber }}
-        </a-col>
-        <a-col :span="8"><b>车位地点：</b>
-          {{ reserveData.spaceAddress }}
+        <a-col :span="8"><b>结束时间：</b>
+          {{ dishesData.endTime }}
         </a-col>
       </a-row>
       <br/>
       <a-row style="padding-left: 24px;padding-right: 24px;">
-        <a-col style="margin-bottom: 15px"><span style="font-size: 15px;font-weight: 650;color: #000c17">车辆图片</span></a-col>
+        <a-col :span="24"><b>活动内容：</b>
+          {{ dishesData.content }}
+        </a-col>
+      </a-row>
+      <br/>
+      <a-row style="padding-left: 24px;padding-right: 24px;">
+        <a-col :span="8"><b>创建时间：</b>
+          {{ dishesData.createDate }}
+        </a-col>
+      </a-row>
+      <br/>
+      <a-row style="padding-left: 24px;padding-right: 24px;">
+        <a-col style="margin-bottom: 15px"><span style="font-size: 15px;font-weight: 650;color: #000c17">图册</span></a-col>
         <a-col :span="24">
           <a-upload
             name="avatar"
@@ -62,12 +58,27 @@
         </a-col>
       </a-row>
       <br/>
+      <a-row style="padding-left: 24px;padding-right: 24px;" v-if="staffList.length !== 0">
+        <a-col style="margin-bottom: 15px"><span style="font-size: 15px;font-weight: 650;color: #000c17">活动邀请人</span></a-col>
+        <a-row :gutter="15">
+          <a-col :span="6" v-for="(item, index) in staffList" :key="index">
+            <a-card :bordered="false">
+              <a-card-meta :title="item.name" :description="item.phone">
+                <a-avatar
+                  v-if="item.images"
+                  slot="avatar"
+                  :src="'http://127.0.0.1:9527/imagesWeb/' + item.images.split(',')[0]"
+                />
+              </a-card-meta>
+            </a-card>
+          </a-col>
+        </a-row>
+      </a-row>
     </div>
   </a-modal>
 </template>
 
 <script>
-import baiduMap from '@/utils/map/baiduMap'
 import moment from 'moment'
 moment.locale('zh-cn')
 function getBase64 (file) {
@@ -79,20 +90,20 @@ function getBase64 (file) {
   })
 }
 export default {
-  name: 'reserveView',
+  name: 'dishesView',
   props: {
-    reserveShow: {
+    dishesShow: {
       type: Boolean,
       default: false
     },
-    reserveData: {
+    dishesData: {
       type: Object
     }
   },
   computed: {
     show: {
       get: function () {
-        return this.reserveShow
+        return this.dishesShow
       },
       set: function () {
       }
@@ -107,25 +118,30 @@ export default {
       repairInfo: null,
       reserveInfo: null,
       durgList: [],
+      staffList: [],
       logisticsList: [],
       userInfo: null
     }
   },
   watch: {
-    reserveShow: function (value) {
+    dishesShow: function (value) {
       if (value) {
-        if (this.reserveData.vehicleImages) {
-          this.imagesInit(this.reserveData.vehicleImages)
-        }
+        this.imagesInit(this.dishesData.images)
+        this.queryStaffListByCondition(this.dishesData.id)
       }
     }
   },
   methods: {
-    local (reserveData) {
+    queryStaffListByCondition (id) {
+      this.$get('/cos/conference-info/queryStaffListByCondition', {conditionId: id}).then((r) => {
+        this.staffList = r.data.data
+      })
+    },
+    local (dishesData) {
       baiduMap.clearOverlays()
       baiduMap.rMap().enableScrollWheelZoom(true)
       // eslint-disable-next-line no-undef
-      let point = new BMap.Point(reserveData.longitude, reserveData.latitude)
+      let point = new BMap.Point(dishesData.longitude, dishesData.latitude)
       baiduMap.pointAdd(point)
       baiduMap.findPoint(point, 16)
       // let driving = new BMap.DrivingRoute(baiduMap.rMap(), {renderOptions:{map: baiduMap.rMap(), autoViewport: true}});

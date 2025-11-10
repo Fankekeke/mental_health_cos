@@ -1,71 +1,72 @@
 <template>
-  <a-drawer
-    title="修改"
-    :maskClosable="false"
-    width=800
-    placement="right"
-    :closable="false"
-    @close="onClose"
-    :visible="show"
-    style="height: calc(100% - 55px);overflow: auto;padding-bottom: 53px;">
+  <a-modal v-model="show" title="修改活动" @cancel="onClose" :width="800">
+    <template slot="footer">
+      <a-button key="back" @click="onClose">
+        取消
+      </a-button>
+      <a-button key="submit" type="primary" :loading="loading" @click="handleSubmit">
+        修改
+      </a-button>
+    </template>
     <a-form :form="form" layout="vertical">
       <a-row :gutter="20">
         <a-col :span="12">
-          <a-form-item label='店铺名称' v-bind="formItemLayout">
+          <a-form-item label='活动标题' v-bind="formItemLayout">
             <a-input v-decorator="[
-            'name',
-            { rules: [{ required: true, message: '请输入店铺名称!' }] }
+            'title',
+            { rules: [{ required: true, message: '请输入活动标题!' }] }
             ]"/>
           </a-form-item>
         </a-col>
         <a-col :span="12">
-          <a-form-item label='店铺地址'>
-            <a-input-search
-              v-decorator="[
-              'address'
-              ]"
-              enter-button="选择"
-              @search="showChildrenDrawer"
-            />
-          </a-form-item>
-        </a-col>
-        <a-col :span="12">
-          <a-form-item label='经度' v-bind="formItemLayout">
+          <a-form-item label='活动地址' v-bind="formItemLayout">
             <a-input v-decorator="[
-            'longitude',
-            { rules: [{ required: true, message: '请输入经度!' }] }
+            'address',
+            { rules: [{ required: true, message: '请输入活动地址!' }] }
             ]"/>
           </a-form-item>
         </a-col>
         <a-col :span="12">
-          <a-form-item label='纬度' v-bind="formItemLayout">
+          <a-form-item label='主办方' v-bind="formItemLayout">
             <a-input v-decorator="[
-            'latitude',
-            { rules: [{ required: true, message: '请输入纬度!' }] }
+            'organizer',
+            { rules: [{ required: true, message: '请输入主办方!' }] }
             ]"/>
           </a-form-item>
         </a-col>
         <a-col :span="12">
-          <a-form-item label='推荐人' v-bind="formItemLayout">
-            <a-input v-decorator="[
-            'recommender',
-            { rules: [{ required: true, message: '请输入推荐人!' }] }
+          <a-form-item label='活动特性' v-bind="formItemLayout">
+            <a-select v-decorator="[
+              'status',
+              { rules: [{ required: true, message: '请输入活动特性!' }] }
+              ]">
+              <a-select-option value="宣传">宣传</a-select-option>
+              <a-select-option value="公益">公益</a-select-option>
+              <a-select-option value="环保">环保</a-select-option>
+            </a-select>
+          </a-form-item>
+        </a-col>
+        <a-col :span="12">
+          <a-form-item label='开始时间' v-bind="formItemLayout">
+            <a-date-picker show-time format="YYYY-MM-DD HH:mm:ss" style="width: 100%" v-decorator="[
+            'startTime',
+            { rules: [{ required: true, message: '请输入开始时间!' }] }
             ]"/>
           </a-form-item>
         </a-col>
         <a-col :span="12">
-          <a-form-item label='联系方式' v-bind="formItemLayout">
-            <a-input v-decorator="[
-            'phone',
-            { rules: [{ required: true, message: '请输入联系方式!' }] }
+          <a-form-item label='结束时间' v-bind="formItemLayout">
+            <a-date-picker show-time format="YYYY-MM-DD HH:mm:ss" style="width: 100%" v-decorator="[
+            'endTime',
+            { rules: [{ required: true, message: '请输入结束时间!' }] }
             ]"/>
           </a-form-item>
         </a-col>
         <a-col :span="24">
-          <a-form-item label='推荐内容' v-bind="formItemLayout">
+          <a-form-item label='活动内容' v-bind="formItemLayout">
             <a-textarea :rows="6" v-decorator="[
             'content',
-             { rules: [{ required: true, message: '请输入推荐内容!' }] }
+             { rules: [{ required: true, message: '请输入活动内容!' }] }
             ]"/>
           </a-form-item>
         </a-col>
@@ -93,22 +94,12 @@
         </a-col>
       </a-row>
     </a-form>
-    <drawerMap :childrenDrawerShow="childrenDrawer" @handlerClosed="handlerClosed"></drawerMap>
-    <div class="drawer-bootom-button">
-      <a-popconfirm title="确定放弃编辑？" @confirm="onClose" okText="确定" cancelText="取消">
-        <a-button style="margin-right: .8rem">取消</a-button>
-      </a-popconfirm>
-      <a-button key="submit" type="primary" :loading="loading" @click="handleSubmit">
-        提交
-      </a-button>
-    </div>
-  </a-drawer>
+  </a-modal>
 </template>
 
 <script>
-import baiduMap from '@/utils/map/baiduMap'
-import drawerMap from '@/utils/map/searchmap/drawerMap'
 import {mapState} from 'vuex'
+import moment from 'moment'
 function getBase64 (file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -122,14 +113,11 @@ const formItemLayout = {
   wrapperCol: { span: 24 }
 }
 export default {
-  name: 'orderEdit',
+  name: 'dishesEdit',
   props: {
-    orderEditVisiable: {
+    dishesEditVisiable: {
       default: false
     }
-  },
-  components: {
-    drawerMap
   },
   computed: {
     ...mapState({
@@ -137,7 +125,7 @@ export default {
     }),
     show: {
       get: function () {
-        return this.orderEditVisiable
+        return this.dishesEditVisiable
       },
       set: function () {
       }
@@ -149,47 +137,20 @@ export default {
       formItemLayout,
       form: this.$form.createForm(this),
       loading: false,
+      staffIds: [],
+      staffList: [],
       fileList: [],
       previewVisible: false,
-      previewImage: '',
-      localPoint: {},
-      stayAddress: '',
-      childrenDrawer: false
+      previewImage: ''
     }
   },
+  mounted () {
+  },
   methods: {
-    handlerClosed (localPoint) {
-      this.childrenDrawer = false
-      if (localPoint !== null && localPoint !== undefined) {
-        this.localPoint = localPoint
-        console.log(this.localPoint)
-
-        let address = baiduMap.getAddress(localPoint)
-        address.getLocation(localPoint, (rs) => {
-          if (rs != null) {
-            if (rs.address !== undefined && rs.address.length !== 0) {
-              this.stayAddress = rs.address
-            }
-            if (rs.surroundingPois !== undefined) {
-              if (rs.surroundingPois.address !== undefined && rs.surroundingPois.address.length !== 0) {
-                this.stayAddress = rs.surroundingPois.address
-              }
-            }
-            let obj = {}
-            obj['address'] = this.stayAddress
-            obj['longitude'] = localPoint.lng
-            obj['latitude'] = localPoint.lat
-            this.form.setFieldsValue(obj)
-          }
-        })
-      }
-    },
-    showChildrenDrawer (value) {
-      this.flagType = value
-      this.childrenDrawer = true
-    },
-    onChildrenDrawerClos () {
-      this.childrenDrawer = false
+    getStaffList () {
+      this.$get('/cos/staff-info/queryStaffList', {enterpriseId: 13}).then((r) => {
+        this.staffList = r.data.data
+      })
     },
     handleCancel () {
       this.previewVisible = false
@@ -213,18 +174,31 @@ export default {
         this.fileList = imageList
       }
     },
-    setFormValues ({...order}) {
-      this.rowId = order.id
-      let fields = ['address', 'name', 'recommender', 'phone', 'content', 'longitude', 'latitude']
+    setFormValues ({...dishes}) {
+      this.rowId = dishes.id
+      let fields = ['title', 'content', 'address', 'startTime', 'endTime', 'staffIds', 'organizer', 'status']
       let obj = {}
-      Object.keys(order).forEach((key) => {
+      Object.keys(dishes).forEach((key) => {
         if (key === 'images') {
           this.fileList = []
-          this.imagesInit(order['images'])
+          this.imagesInit(dishes['images'])
+        }
+        if (key === 'startTime') {
+          dishes[key] = moment(dishes[key])
+        }
+        if (key === 'endTime') {
+          dishes[key] = moment(dishes[key])
+        }
+        if (key === 'staffIds') {
+          setTimeout(() => {
+            dishes['staffIdList'] = dishes[key].split(',').map(Number)
+            // this.staffIds = dishes[key].split(',')
+            console.log(dishes['staffIdList'])
+          }, 500)
         }
         if (fields.indexOf(key) !== -1) {
           this.form.getFieldDecorator(key)
-          obj[key] = order[key]
+          obj[key] = dishes[key]
         }
       })
       this.form.setFieldsValue(obj)
@@ -250,9 +224,15 @@ export default {
       this.form.validateFields((err, values) => {
         values.id = this.rowId
         values.images = images.length > 0 ? images.join(',') : null
+        if (values.startTime) {
+          values.startTime = moment(values.startTime).format('YYYY-MM-DD HH:mm:ss')
+        }
+        if (values.endTime) {
+          values.endTime = moment(values.endTime).format('YYYY-MM-DD HH:mm:ss')
+        }
         if (!err) {
           this.loading = true
-          this.$put('/cos/order-info', {
+          this.$put('/cos/conference-info', {
             ...values
           }).then((r) => {
             this.reset()

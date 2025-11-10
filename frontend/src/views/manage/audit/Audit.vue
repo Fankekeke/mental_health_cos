@@ -7,15 +7,7 @@
           <div :class="advanced ? null: 'fold'">
             <a-col :md="6" :sm="24">
               <a-form-item
-                label="订单编号"
-                :labelCol="{span: 5}"
-                :wrapperCol="{span: 18, offset: 1}">
-                <a-input v-model="queryParams.code"/>
-              </a-form-item>
-            </a-col>
-            <a-col :md="6" :sm="24">
-              <a-form-item
-                label="房间名称"
+                label="学生姓名"
                 :labelCol="{span: 5}"
                 :wrapperCol="{span: 18, offset: 1}">
                 <a-input v-model="queryParams.name"/>
@@ -23,10 +15,10 @@
             </a-col>
             <a-col :md="6" :sm="24">
               <a-form-item
-                label="用户名称"
+                label="活动审核标题"
                 :labelCol="{span: 5}"
                 :wrapperCol="{span: 18, offset: 1}">
-                <a-input v-model="queryParams.userName"/>
+                <a-input v-model="queryParams.title"/>
               </a-form-item>
             </a-col>
           </div>
@@ -39,6 +31,7 @@
     </div>
     <div>
       <div class="operator">
+<!--        <a-button type="primary" ghost @click="add">新增</a-button>-->
         <a-button @click="batchDelete">删除</a-button>
       </div>
       <!-- 表格区域 -->
@@ -51,15 +44,9 @@
                :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
                :scroll="{ x: 900 }"
                @change="handleTableChange">
-        <template slot="contentShow" slot-scope="text, record">
-          <template>
-            <a-tooltip>
-              <template slot="title">
-                {{ record.content }}
-              </template>
-              {{ record.content.slice(0, 10) }} ...
-            </a-tooltip>
-          </template>
+        <template slot="operation" slot-scope="text, record">
+          <a-icon v-if="record.status == 0" type="check" @click="audit(record, 1)" title="通 过"></a-icon>
+          <a-icon v-if="record.status == 0" type="stop" @click="audit(record, 2)" title="详 情" style="margin-left: 15px"></a-icon>
         </template>
       </a-table>
     </div>
@@ -73,16 +60,20 @@ import moment from 'moment'
 moment.locale('zh-cn')
 
 export default {
-  name: 'evaluate',
+  name: 'dishes',
   components: {RangeDate},
   data () {
     return {
       advanced: false,
-      evaluateAdd: {
+      dishesAdd: {
         visiable: false
       },
-      evaluateEdit: {
+      dishesEdit: {
         visiable: false
+      },
+      dishesView: {
+        visiable: false,
+        data: null
       },
       queryParams: {},
       filteredInfo: null,
@@ -108,67 +99,11 @@ export default {
     }),
     columns () {
       return [{
-        title: '订单编号',
-        dataIndex: 'orderCode'
+        title: '学生姓名',
+        ellipsis: true,
+        dataIndex: 'name'
       }, {
-        title: '订单价格',
-        dataIndex: 'totalPrice',
-        customRender: (text, row, index) => {
-          if (text !== null) {
-            return text + '元'
-          } else {
-            return '- -'
-          }
-        }
-      }, {
-        title: '评价客户',
-        dataIndex: 'userName'
-      }, {
-        title: '房间号',
-        dataIndex: 'name',
-        customRender: (text, row, index) => {
-          if (text !== null) {
-            return text
-          } else {
-            return '- -'
-          }
-        }
-      }, {
-        title: '开始时间',
-        dataIndex: 'startDate',
-        customRender: (text, row, index) => {
-          if (text !== null) {
-            return text
-          } else {
-            return '- -'
-          }
-        }
-      }, {
-        title: '结束时间',
-        dataIndex: 'endDate',
-        customRender: (text, row, index) => {
-          if (text !== null) {
-            return text
-          } else {
-            return '- -'
-          }
-        }
-      }, {
-        title: '评价得分',
-        dataIndex: 'score',
-        customRender: (text, row, index) => {
-          if (text !== null) {
-            return text + '分'
-          } else {
-            return '- -'
-          }
-        }
-      }, {
-        title: '评价内容',
-        dataIndex: 'content',
-        scopedSlots: { customRender: 'contentShow' }
-      }, {
-        title: '评价图片',
+        title: '学生头像',
         dataIndex: 'images',
         customRender: (text, record, index) => {
           if (!record.images) return <a-avatar shape="square" icon="user" />
@@ -180,7 +115,57 @@ export default {
           </a-popover>
         }
       }, {
-        title: '评价时间',
+        title: '审核状态',
+        dataIndex: 'status',
+        customRender: (text, row, index) => {
+          switch (text) {
+            case '0':
+              return <a-tag color="#87d068">正在审核</a-tag>
+            case '1':
+              return <a-tag color="#2db7f5">通过</a-tag>
+            case '2':
+              return <a-tag color="#ffba5a">驳回</a-tag>
+            default:
+              return text
+          }
+        },
+      }, {
+        title: '活动地址',
+        dataIndex: 'address',
+        customRender: (text, row, index) => {
+          if (text !== null) {
+            return text
+          } else {
+            return '- -'
+          }
+        }
+      }, {
+        title: '活动标题',
+        ellipsis: true,
+        dataIndex: 'title'
+      }, {
+        title: '开始时间',
+        ellipsis: true,
+        dataIndex: 'startTime',
+        customRender: (text, row, index) => {
+          if (text !== null) {
+            return text
+          } else {
+            return '- -'
+          }
+        }
+      }, {
+        title: '结束时间',
+        dataIndex: 'endTime',
+        customRender: (text, row, index) => {
+          if (text !== null) {
+            return text
+          } else {
+            return '- -'
+          }
+        }
+      }, {
+        title: '创建时间',
         dataIndex: 'createDate',
         customRender: (text, row, index) => {
           if (text !== null) {
@@ -189,6 +174,10 @@ export default {
             return '- -'
           }
         }
+      }, {
+        title: '操作',
+        dataIndex: 'operation',
+        scopedSlots: {customRender: 'operation'}
       }]
     }
   },
@@ -196,6 +185,20 @@ export default {
     this.fetch()
   },
   methods: {
+    audit (row, status) {
+      row.status = status
+      this.$put('/cos/audit-info', row).then((r) => {
+        this.$message.success('活动审核成功')
+        this.search()
+      })
+    },
+    dishesViewOpen (row) {
+      this.dishesView.data = row
+      this.dishesView.visiable = true
+    },
+    handledishesViewClose () {
+      this.dishesView.visiable = false
+    },
     onSelectChange (selectedRowKeys) {
       this.selectedRowKeys = selectedRowKeys
     },
@@ -203,26 +206,26 @@ export default {
       this.advanced = !this.advanced
     },
     add () {
-      this.evaluateAdd.visiable = true
+      this.dishesAdd.visiable = true
     },
-    handleevaluateAddClose () {
-      this.evaluateAdd.visiable = false
+    handledishesAddClose () {
+      this.dishesAdd.visiable = false
     },
-    handleevaluateAddSuccess () {
-      this.evaluateAdd.visiable = false
-      this.$message.success('新增评价成功')
+    handledishesAddSuccess () {
+      this.dishesAdd.visiable = false
+      this.$message.success('新增活动审核成功')
       this.search()
     },
     edit (record) {
-      this.$refs.evaluateEdit.setFormValues(record)
-      this.evaluateEdit.visiable = true
+      this.$refs.dishesEdit.setFormValues(record)
+      this.dishesEdit.visiable = true
     },
-    handleevaluateEditClose () {
-      this.evaluateEdit.visiable = false
+    handledishesEditClose () {
+      this.dishesEdit.visiable = false
     },
-    handleevaluateEditSuccess () {
-      this.evaluateEdit.visiable = false
-      this.$message.success('修改评价成功')
+    handledishesEditSuccess () {
+      this.dishesEdit.visiable = false
+      this.$message.success('修改活动审核成功')
       this.search()
     },
     handleDeptChange (value) {
@@ -240,7 +243,7 @@ export default {
         centered: true,
         onOk () {
           let ids = that.selectedRowKeys.join(',')
-          that.$delete('/cos/evaluate-info/' + ids).then(() => {
+          that.$delete('/cos/audit-info/' + ids).then(() => {
             that.$message.success('删除成功')
             that.selectedRowKeys = []
             that.search()
@@ -310,11 +313,8 @@ export default {
         params.size = this.pagination.defaultPageSize
         params.current = this.pagination.defaultCurrent
       }
-      if (params.type === undefined) {
-        delete params.type
-      }
-      this.userId = this.currentUser.userId
-      this.$get('/cos/order-evaluate/page', {
+      params.enterpriseId = this.currentUser.userId
+      this.$get('/cos/audit-info/page', {
         ...params
       }).then((r) => {
         let data = r.data.data

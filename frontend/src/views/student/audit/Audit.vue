@@ -7,26 +7,18 @@
           <div :class="advanced ? null: 'fold'">
             <a-col :md="6" :sm="24">
               <a-form-item
-                label="车位名称"
+                label="学生姓名"
                 :labelCol="{span: 5}"
                 :wrapperCol="{span: 18, offset: 1}">
-                <a-input v-model="queryParams.spaceName"/>
+                <a-input v-model="queryParams.name"/>
               </a-form-item>
             </a-col>
             <a-col :md="6" :sm="24">
               <a-form-item
-                label="车牌号码"
+                label="活动审核标题"
                 :labelCol="{span: 5}"
                 :wrapperCol="{span: 18, offset: 1}">
-                <a-input v-model="queryParams.vehicleNumber"/>
-              </a-form-item>
-            </a-col>
-            <a-col :md="6" :sm="24">
-              <a-form-item
-                label="用户名称"
-                :labelCol="{span: 5}"
-                :wrapperCol="{span: 18, offset: 1}">
-                <a-input v-model="queryParams.userName"/>
+                <a-input v-model="queryParams.title"/>
               </a-form-item>
             </a-col>
           </div>
@@ -53,38 +45,33 @@
                :scroll="{ x: 900 }"
                @change="handleTableChange">
         <template slot="operation" slot-scope="text, record">
-          <a-icon type="file-search" @click="reserveViewOpen(record)" title="详 情" style="margin-left: 15px"></a-icon>
+          <a-icon type="setting" theme="twoTone" twoToneColor="#4a9ff5" @click="edit(record)" title="修 改"></a-icon>
+          <a-icon type="file-search" @click="dishesViewOpen(record)" title="详 情" style="margin-left: 15px"></a-icon>
         </template>
       </a-table>
     </div>
-    <reserve-view
-      @close="handlereserveViewClose"
-      :reserveShow="reserveView.visiable"
-      :reserveData="reserveView.data">
-    </reserve-view>
   </a-card>
 </template>
 
 <script>
 import RangeDate from '@/components/datetime/RangeDate'
-import reserveView from './ReserveView.vue'
 import {mapState} from 'vuex'
 import moment from 'moment'
 moment.locale('zh-cn')
 
 export default {
-  name: 'reserve',
-  components: {reserveView, RangeDate},
+  name: 'dishes',
+  components: {RangeDate},
   data () {
     return {
       advanced: false,
-      reserveAdd: {
+      dishesAdd: {
         visiable: false
       },
-      reserveEdit: {
+      dishesEdit: {
         visiable: false
       },
-      reserveView: {
+      dishesView: {
         visiable: false,
         data: null
       },
@@ -111,18 +98,12 @@ export default {
       currentUser: state => state.account.user
     }),
     columns () {
-      return [ {
-        title: '用户名称',
-        dataIndex: 'name',
-        customRender: (text, row, index) => {
-          if (text !== null) {
-            return text
-          } else {
-            return '- -'
-          }
-        }
+      return [{
+        title: '学生姓名',
+        ellipsis: true,
+        dataIndex: 'name'
       }, {
-        title: '用户头像',
+        title: '学生头像',
         dataIndex: 'images',
         customRender: (text, record, index) => {
           if (!record.images) return <a-avatar shape="square" icon="user" />
@@ -134,51 +115,23 @@ export default {
           </a-popover>
         }
       }, {
-        title: '联系方式',
-        dataIndex: 'phone',
-        customRender: (text, row, index) => {
-          if (text !== null) {
-            return text
-          } else {
-            return '- -'
-          }
-        }
-      }, {
-        title: '车牌号码',
-        dataIndex: 'vehicleNumber',
-        customRender: (text, row, index) => {
-          if (text !== null) {
-            return text
-          } else {
-            return '- -'
-          }
-        }
-      }, {
-        title: '车位名称',
-        dataIndex: 'spaceName',
-        customRender: (text, row, index) => {
-          if (text !== null) {
-            return text
-          } else {
-            return '- -'
-          }
-        }
-      }, {
-        title: '预约状态',
+        title: '审核状态',
         dataIndex: 'status',
         customRender: (text, row, index) => {
           switch (text) {
             case '0':
-              return <a-tag color="red">结束</a-tag>
+              return <a-tag color="#87d068">正在审核</a-tag>
             case '1':
-              return <a-tag color="green">预约中</a-tag>
+              return <a-tag color="#2db7f5">通过</a-tag>
+            case '2':
+              return <a-tag color="#ffba5a">驳回</a-tag>
             default:
-              return '- -'
+              return text
           }
-        }
+        },
       }, {
-        title: '预约开始时间',
-        dataIndex: 'startDate',
+        title: '活动地址',
+        dataIndex: 'address',
         customRender: (text, row, index) => {
           if (text !== null) {
             return text
@@ -187,8 +140,13 @@ export default {
           }
         }
       }, {
-        title: '预约结束时间',
-        dataIndex: 'endDate',
+        title: '活动标题',
+        ellipsis: true,
+        dataIndex: 'title'
+      }, {
+        title: '开始时间',
+        ellipsis: true,
+        dataIndex: 'startTime',
         customRender: (text, row, index) => {
           if (text !== null) {
             return text
@@ -197,9 +155,25 @@ export default {
           }
         }
       }, {
-        title: '操作',
-        dataIndex: 'operation',
-        scopedSlots: {customRender: 'operation'}
+        title: '结束时间',
+        dataIndex: 'endTime',
+        customRender: (text, row, index) => {
+          if (text !== null) {
+            return text
+          } else {
+            return '- -'
+          }
+        }
+      }, {
+        title: '创建时间',
+        dataIndex: 'createDate',
+        customRender: (text, row, index) => {
+          if (text !== null) {
+            return text
+          } else {
+            return '- -'
+          }
+        }
       }]
     }
   },
@@ -207,6 +181,13 @@ export default {
     this.fetch()
   },
   methods: {
+    dishesViewOpen (row) {
+      this.dishesView.data = row
+      this.dishesView.visiable = true
+    },
+    handledishesViewClose () {
+      this.dishesView.visiable = false
+    },
     onSelectChange (selectedRowKeys) {
       this.selectedRowKeys = selectedRowKeys
     },
@@ -214,33 +195,26 @@ export default {
       this.advanced = !this.advanced
     },
     add () {
-      this.reserveAdd.visiable = true
+      this.dishesAdd.visiable = true
     },
-    handlereserveAddClose () {
-      this.reserveAdd.visiable = false
+    handledishesAddClose () {
+      this.dishesAdd.visiable = false
     },
-    handlereserveAddSuccess () {
-      this.reserveAdd.visiable = false
-      this.$message.success('新增会员成功')
+    handledishesAddSuccess () {
+      this.dishesAdd.visiable = false
+      this.$message.success('新增活动审核成功')
       this.search()
     },
     edit (record) {
-      this.$refs.reserveEdit.setFormValues(record)
-      this.reserveEdit.visiable = true
+      this.$refs.dishesEdit.setFormValues(record)
+      this.dishesEdit.visiable = true
     },
-    reserveViewOpen (row) {
-      this.reserveView.data = row
-      this.reserveView.visiable = true
+    handledishesEditClose () {
+      this.dishesEdit.visiable = false
     },
-    handlereserveViewClose () {
-      this.reserveView.visiable = false
-    },
-    handlereserveEditClose () {
-      this.reserveEdit.visiable = false
-    },
-    handlereserveEditSuccess () {
-      this.reserveEdit.visiable = false
-      this.$message.success('修改会员成功')
+    handledishesEditSuccess () {
+      this.dishesEdit.visiable = false
+      this.$message.success('修改活动审核成功')
       this.search()
     },
     handleDeptChange (value) {
@@ -258,7 +232,7 @@ export default {
         centered: true,
         onOk () {
           let ids = that.selectedRowKeys.join(',')
-          that.$delete('/cos/reserve-info/' + ids).then(() => {
+          that.$delete('/cos/audit-info/' + ids).then(() => {
             that.$message.success('删除成功')
             that.selectedRowKeys = []
             that.search()
@@ -328,11 +302,8 @@ export default {
         params.size = this.pagination.defaultPageSize
         params.current = this.pagination.defaultCurrent
       }
-      if (params.delFlag === undefined) {
-        delete params.delFlag
-      }
-      params.userId = this.currentUser.userId
-      this.$get('/cos/reserve-info/page', {
+      params.enterpriseId = this.currentUser.userId
+      this.$get('/cos/audit-info/page', {
         ...params
       }).then((r) => {
         let data = r.data.data

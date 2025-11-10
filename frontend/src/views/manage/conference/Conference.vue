@@ -7,18 +7,26 @@
           <div :class="advanced ? null: 'fold'">
             <a-col :md="6" :sm="24">
               <a-form-item
-                label="用户名称"
+                label="活动标题"
                 :labelCol="{span: 5}"
                 :wrapperCol="{span: 18, offset: 1}">
-                <a-input v-model="queryParams.name"/>
+                <a-input v-model="queryParams.title"/>
               </a-form-item>
             </a-col>
             <a-col :md="6" :sm="24">
               <a-form-item
-                label="用户名称"
+                label="活动地址"
                 :labelCol="{span: 5}"
                 :wrapperCol="{span: 18, offset: 1}">
-                <a-input v-model="queryParams.code"/>
+                <a-input v-model="queryParams.address"/>
+              </a-form-item>
+            </a-col>
+            <a-col :md="6" :sm="24">
+              <a-form-item
+                label="举办人"
+                :labelCol="{span: 5}"
+                :wrapperCol="{span: 18, offset: 1}">
+                <a-input v-model="queryParams.staffName"/>
               </a-form-item>
             </a-col>
           </div>
@@ -31,7 +39,7 @@
     </div>
     <div>
       <div class="operator">
-<!--        <a-button type="primary" ghost @click="add">新增</a-button>-->
+        <a-button type="primary" ghost @click="add">新增</a-button>
         <a-button @click="batchDelete">删除</a-button>
       </div>
       <!-- 表格区域 -->
@@ -44,49 +52,54 @@
                :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
                :scroll="{ x: 900 }"
                @change="handleTableChange">
-        <template slot="contentShow" slot-scope="text, record">
-          <template>
-            <a-tooltip>
-              <template slot="title">
-                {{ record.content }}
-              </template>
-              {{ record.content.slice(0, 20) }} ...
-            </a-tooltip>
-          </template>
-        </template>
         <template slot="operation" slot-scope="text, record">
-          <a-icon type="file-search" @click="memberViewOpen(record)" title="详 情" style="margin-left: 15px"></a-icon>
+          <a-icon type="setting" theme="twoTone" twoToneColor="#4a9ff5" @click="edit(record)" title="修 改"></a-icon>
+          <a-icon type="file-search" @click="dishesViewOpen(record)" title="详 情" style="margin-left: 15px"></a-icon>
         </template>
       </a-table>
     </div>
-    <member-view
-      @close="handlememberViewClose"
-      :memberShow="memberView.visiable"
-      :memberData="memberView.data">
-    </member-view>
+    <dishes-add
+      v-if="dishesAdd.visiable"
+      @close="handledishesAddClose"
+      @success="handledishesAddSuccess"
+      :dishesAddVisiable="dishesAdd.visiable">
+    </dishes-add>
+    <dishes-edit
+      ref="dishesEdit"
+      @close="handledishesEditClose"
+      @success="handledishesEditSuccess"
+      :dishesEditVisiable="dishesEdit.visiable">
+    </dishes-edit>
+    <dishes-view
+      @close="handledishesViewClose"
+      :dishesShow="dishesView.visiable"
+      :dishesData="dishesView.data">
+    </dishes-view>
   </a-card>
 </template>
 
 <script>
 import RangeDate from '@/components/datetime/RangeDate'
-import memberView from './MessageView.vue'
+import dishesAdd from './ConferenceAdd.vue'
+import dishesEdit from './ConferenceEdit.vue'
+import dishesView from './ConferenceView.vue'
 import {mapState} from 'vuex'
 import moment from 'moment'
 moment.locale('zh-cn')
 
 export default {
-  name: 'member',
-  components: {memberView, RangeDate},
+  name: 'dishes',
+  components: {dishesAdd, dishesEdit, dishesView, RangeDate},
   data () {
     return {
       advanced: false,
-      memberAdd: {
+      dishesAdd: {
         visiable: false
       },
-      memberEdit: {
+      dishesEdit: {
         visiable: false
       },
-      memberView: {
+      dishesView: {
         visiable: false,
         data: null
       },
@@ -113,21 +126,22 @@ export default {
       currentUser: state => state.account.user
     }),
     columns () {
-      return [ {
-        title: '用户编号',
-        dataIndex: 'code'
+      return [{
+        title: '主办方',
+        ellipsis: true,
+        dataIndex: 'organizer'
       }, {
-        title: '用户名称',
-        dataIndex: 'name',
+        title: '活动特性',
+        dataIndex: 'status',
         customRender: (text, row, index) => {
-          if (text !== null) {
-            return text
-          } else {
-            return '- -'
-          }
+          return <a-tag>{{ text }}</a-tag>
         }
       }, {
-        title: '用户头像',
+        title: '活动标题',
+        ellipsis: true,
+        dataIndex: 'title'
+      }, {
+        title: '活动图片',
         dataIndex: 'images',
         customRender: (text, record, index) => {
           if (!record.images) return <a-avatar shape="square" icon="user" />
@@ -139,24 +153,32 @@ export default {
           </a-popover>
         }
       }, {
-        title: '消息内容',
-        dataIndex: 'content',
-        scopedSlots: { customRender: 'contentShow' }
+        title: '活动内容',
+        ellipsis: true,
+        dataIndex: 'content'
       }, {
-        title: '消息状态',
-        dataIndex: 'status',
+        title: '开始时间',
+        ellipsis: true,
+        dataIndex: 'startTime',
         customRender: (text, row, index) => {
-          switch (text) {
-            case '0':
-              return <a-tag>未读</a-tag>
-            case '1':
-              return <a-tag>已读</a-tag>
-            default:
-              return '- -'
+          if (text !== null) {
+            return text
+          } else {
+            return '- -'
           }
         }
       }, {
-        title: '发送时间',
+        title: '结束时间',
+        dataIndex: 'endTime',
+        customRender: (text, row, index) => {
+          if (text !== null) {
+            return text
+          } else {
+            return '- -'
+          }
+        }
+      }, {
+        title: '创建时间',
         dataIndex: 'createDate',
         customRender: (text, row, index) => {
           if (text !== null) {
@@ -176,6 +198,13 @@ export default {
     this.fetch()
   },
   methods: {
+    dishesViewOpen (row) {
+      this.dishesView.data = row
+      this.dishesView.visiable = true
+    },
+    handledishesViewClose () {
+      this.dishesView.visiable = false
+    },
     onSelectChange (selectedRowKeys) {
       this.selectedRowKeys = selectedRowKeys
     },
@@ -183,33 +212,26 @@ export default {
       this.advanced = !this.advanced
     },
     add () {
-      this.memberAdd.visiable = true
+      this.dishesAdd.visiable = true
     },
-    handlememberAddClose () {
-      this.memberAdd.visiable = false
+    handledishesAddClose () {
+      this.dishesAdd.visiable = false
     },
-    handlememberAddSuccess () {
-      this.memberAdd.visiable = false
-      this.$message.success('新增会员成功')
+    handledishesAddSuccess () {
+      this.dishesAdd.visiable = false
+      this.$message.success('新增活动成功')
       this.search()
     },
     edit (record) {
-      this.$refs.memberEdit.setFormValues(record)
-      this.memberEdit.visiable = true
+      this.$refs.dishesEdit.setFormValues(record)
+      this.dishesEdit.visiable = true
     },
-    memberViewOpen (row) {
-      this.memberView.data = row
-      this.memberView.visiable = true
+    handledishesEditClose () {
+      this.dishesEdit.visiable = false
     },
-    handlememberViewClose () {
-      this.memberView.visiable = false
-    },
-    handlememberEditClose () {
-      this.memberEdit.visiable = false
-    },
-    handlememberEditSuccess () {
-      this.memberEdit.visiable = false
-      this.$message.success('修改会员成功')
+    handledishesEditSuccess () {
+      this.dishesEdit.visiable = false
+      this.$message.success('修改活动成功')
       this.search()
     },
     handleDeptChange (value) {
@@ -227,7 +249,7 @@ export default {
         centered: true,
         onOk () {
           let ids = that.selectedRowKeys.join(',')
-          that.$delete('/cos/message-info/' + ids).then(() => {
+          that.$delete('/cos/conference-info/' + ids).then(() => {
             that.$message.success('删除成功')
             that.selectedRowKeys = []
             that.search()
@@ -297,11 +319,8 @@ export default {
         params.size = this.pagination.defaultPageSize
         params.current = this.pagination.defaultCurrent
       }
-      if (params.delFlag === undefined) {
-        delete params.delFlag
-      }
-      params.userId = this.currentUser.userId
-      this.$get('/cos/message-info/page', {
+      params.enterpriseId = this.currentUser.userId
+      this.$get('/cos/conference-info/page', {
         ...params
       }).then((r) => {
         let data = r.data.data

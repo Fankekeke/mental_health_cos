@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.mrbird.febs.cos.dao.ConferenceInfoMapper">
+
+    <!-- 分页获取活动记录 -->
+    <select id="queryConferencePage" resultType="java.util.LinkedHashMap">
+        select
+        ci.id,
+        ci.staff_id,
+        ci.title,
+        ci.content,
+        ci.address,
+        ci.images,
+        ci.start_time,
+        ci.end_time,
+        ci.staff_ids,
+        ci.organizer,
+        ci.status,
+        ci.create_date
+        from
+        conference_info ci
+        where 1 = 1
+        <if test="conferenceInfo.title != null and conferenceInfo.title != ''">
+            AND ci.title LIKE CONCAT('%',#{conferenceInfo.title},'%')
+        </if>
+        <if test="conferenceInfo.address != null and conferenceInfo.address != ''">
+            AND ci.address LIKE CONCAT('%',#{conferenceInfo.address},'%')
+        </if>
+        order by ci.create_date desc
+    </select>
+</mapper>
