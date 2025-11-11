@@ -2,6 +2,7 @@ package cc.mrbird.febs.common.runner;
 
 import cc.mrbird.febs.common.exception.RedisConnectException;
 import cc.mrbird.febs.common.service.CacheService;
+import cc.mrbird.febs.cos.service.IScheduleInfoService;
 import cc.mrbird.febs.system.domain.User;
 import cc.mrbird.febs.system.manager.UserManager;
 import cc.mrbird.febs.system.service.UserService;
@@ -30,6 +31,9 @@ public class CacheInitRunner implements ApplicationRunner {
     private UserManager userManager;
 
     @Autowired
+    private IScheduleInfoService scheduleInfoService;
+
+    @Autowired
     private ConfigurableApplicationContext context;
 
     @Override
@@ -44,6 +48,7 @@ public class CacheInitRunner implements ApplicationRunner {
             for (User user : list) {
                 userManager.loadUserRedisCache(user);
             }
+            scheduleInfoService.batchSchedule();
         } catch (Exception e) {
             log.error("缓存初始化失败，{}", e.getMessage());
             log.error(" ____   __    _   _ ");

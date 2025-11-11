@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.mrbird.febs.cos.dao.RegisterInfoMapper">
+
+    <!-- 分页获取辅导预约信息 -->
+    <select id="queryRegisterPage" resultType="java.util.LinkedHashMap">
+        SELECT
+        ri.id,
+        ri.user_id,
+        ri.register_date,
+        ri.staff_id,
+        ri.start_date,
+        ri.end_date,
+        ri.STATUS,
+        ri.remark,
+        ri.CODE,
+        ri.reference,
+        ri.create_date,
+        ri.schedule_id,
+        si.NAME AS scheduleName,
+        si.start_date,
+        si.end_date,
+        si.task_date,
+        ti.name as teacher_name,
+        ti.phone,
+        ti.sex,
+        ti.images as teacher_images,
+        stui.name as student_name,
+        stui.images as student_images
+        FROM register_info ri
+        LEFT JOIN schedule_info si ON (si.id = ri.schedule_id)
+        LEFT JOIN student_info stui ON (stui.id = ri.user_id)
+        LEFT JOIN teacher_info ti ON (ti.id = ri.staff_id)
+        WHERE 1 = 1
+        <if test="registerInfo.scheduleName != null and registerInfo.scheduleName != ''">
+            AND si.name LIKE CONCAT('%',#{registerInfo.scheduleName},'%')
+        </if>
+        <if test="registerInfo.teacherName != null and registerInfo.teacherName != ''">
+            AND ti.name LIKE CONCAT('%',#{registerInfo.teacherName},'%')
+        </if>
+        <if test="registerInfo.studentName != null and registerInfo.studentName != ''">
+            AND stui.name LIKE CONCAT('%',#{registerInfo.studentName},'%')
+        </if>
+        ORDER BY ri.create_date DESC
+    </select>
+</mapper>

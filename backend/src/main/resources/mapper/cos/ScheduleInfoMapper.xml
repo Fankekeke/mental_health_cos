@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.mrbird.febs.cos.dao.ScheduleInfoMapper">
+
+    <!-- 分页获取排班信息 -->
+    <select id="querySchedule" resultType="java.util.LinkedHashMap">
+        SELECT
+        si.id,
+        si.CODE,
+        si.NAME,
+        si.start_date,
+        si.end_date,
+        si.staff_ids,
+        si.create_date,
+        si.task_date,
+        si.STATUS,
+        ti.name as teacher_name,
+        ti.phone,
+        ti.sex,
+        ti.images as teacher_images,
+        FROM
+        schedule_info si
+        LEFT JOIN teacher_info ti ON (ti.id = si.staff_ids)
+        WHERE
+        1 = 1
+        <if test="scheduleInfo.name != null and scheduleInfo.name != ''">
+            AND ti.name LIKE CONCAT('%',#{scheduleInfo.name},'%')
+        </if>
+        <if test="scheduleInfo.status != null and scheduleInfo.status != ''">
+            AND si.STATUS = #{scheduleInfo.status}
+        </if>
+        ORDER BY
+        si.task_date DESC
+    </select>
+
+    <!-- 获取可预约的排班信息 -->
+    <select id="queryScheduleReserve" resultType="java.util.LinkedHashMap">
+        SELECT
+        si.id,
+        si.CODE,
+        si.NAME,
+        si.start_date,
+        si.end_date,
+        si.staff_ids,
+        si.create_date,
+        si.task_date,
+        si.STATUS,
+        ti.name as teacher_name,
+        ti.phone,
+        ti.sex,
+        ti.images as teacher_images,
+        FROM
+        schedule_info si
+        LEFT JOIN teacher_info ti ON (ti.id = si.staff_ids)
+        WHERE
+        1 = 1
+        AND AND si.start_date >= #{currentTime}
+        ORDER BY
+        si.task_date DESC
+    </select>
+</mapper>

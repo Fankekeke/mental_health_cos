@@ -87,5 +87,10 @@ public class TeacherInfo implements Serializable {
      */
     private String expert;
 
+    /**
+     * 辅导时间表
+     */
+    private String weeks;
 
+    private String workTimes;
 }

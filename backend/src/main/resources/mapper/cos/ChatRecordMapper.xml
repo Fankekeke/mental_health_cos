@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.mrbird.febs.cos.dao.ChatRecordMapper">
+
+    <!-- 根据教师ID获取沟通联系人列表 -->
+    <select id="getContactsByHotelId" resultType="java.util.LinkedHashMap">
+        SELECT DISTINCT cr.user_id          as         userId,
+                        ui.name             as         userName,
+                        ui.images           as         userAvatar,
+                        MAX(cr.create_time) as         lastMessageTime,
+                        (SELECT content
+                         FROM chat_record cr2
+                         WHERE cr2.user_id = cr.user_id
+                           AND cr2.hotel_id = #{hotelId}
+                         ORDER BY cr2.create_time DESC LIMIT 1) as lastMessage
+        FROM chat_record cr
+            LEFT JOIN student_info ui
+        ON cr.user_id = ui.id
+        WHERE cr.hotel_id = #{hotelId}
+        GROUP BY cr.user_id, ui.name, ui.avatar
+        ORDER BY lastMessageTime DESC
+    </select>
+
+    <!-- 根据用户ID获取沟通联系人列表 -->
+    <select id="getContactsByUserId" resultType="java.util.LinkedHashMap">
+        SELECT DISTINCT cr.hotel_id         as         hotelId,
+                        hi.name             as         hotelName,
+                        hi.images           as         hotelImage,
+                        MAX(cr.create_time) as         lastMessageTime,
+                        (SELECT content
+                         FROM chat_record cr2
+                         WHERE cr2.hotel_id = cr.hotel_id
+                           AND cr2.user_id = #{userId}
+                         ORDER BY cr2.create_time DESC LIMIT 1) as lastMessage
+        FROM chat_record cr
+            LEFT JOIN teacher_info hi
+        ON cr.hotel_id = hi.id
+        WHERE cr.user_id = #{userId}
+        GROUP BY cr.hotel_id, hi.name, hi.images
+        ORDER BY lastMessageTime DESC
+    </select>
+</mapper>
