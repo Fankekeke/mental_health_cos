@@ -18,12 +18,12 @@ public class ChatRecordServiceImpl extends ServiceImpl<ChatRecordMapper, ChatRec
     /**
      * 根据教师ID获取沟通联系人列表
      *
-     * @param hotelId 教师ID
+     * @param teacherId 教师ID
      * @return 联系人列表
      */
     @Override
-    public List<LinkedHashMap<String, Object>> getContactsByHotelId(Integer hotelId) {
-        return baseMapper.getContactsByHotelId(hotelId);
+    public List<LinkedHashMap<String, Object>> getContactsByHotelId(Integer teacherId) {
+        return baseMapper.getContactsByHotelId(teacherId);
     }
 
     /**

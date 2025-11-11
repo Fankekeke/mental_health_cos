@@ -4,39 +4,41 @@
 
     <!-- 根据教师ID获取沟通联系人列表 -->
     <select id="getContactsByHotelId" resultType="java.util.LinkedHashMap">
-        SELECT DISTINCT cr.user_id          as         userId,
+        SELECT DISTINCT cr.user_id          as         studentId,
+                        cr.teacher_id       AS         teacherId,
                         ui.name             as         userName,
                         ui.images           as         userAvatar,
                         MAX(cr.create_time) as         lastMessageTime,
                         (SELECT content
                          FROM chat_record cr2
                          WHERE cr2.user_id = cr.user_id
-                           AND cr2.hotel_id = #{hotelId}
+                           AND cr2.teacher_id = #{teacherId}
                          ORDER BY cr2.create_time DESC LIMIT 1) as lastMessage
         FROM chat_record cr
             LEFT JOIN student_info ui
         ON cr.user_id = ui.id
-        WHERE cr.hotel_id = #{hotelId}
+        WHERE cr.teacher_id = #{teacherId}
         GROUP BY cr.user_id, ui.name, ui.avatar
         ORDER BY lastMessageTime DESC
     </select>
 
     <!-- 根据用户ID获取沟通联系人列表 -->
     <select id="getContactsByUserId" resultType="java.util.LinkedHashMap">
-        SELECT DISTINCT cr.hotel_id         as         hotelId,
+        SELECT DISTINCT cr.teacher_id       as         teacherId,
+                        cr.user_id          AS         studentId,
                         hi.name             as         hotelName,
                         hi.images           as         hotelImage,
                         MAX(cr.create_time) as         lastMessageTime,
                         (SELECT content
                          FROM chat_record cr2
-                         WHERE cr2.hotel_id = cr.hotel_id
+                         WHERE cr2.teacher_id = cr.teacher_id
                            AND cr2.user_id = #{userId}
                          ORDER BY cr2.create_time DESC LIMIT 1) as lastMessage
         FROM chat_record cr
             LEFT JOIN teacher_info hi
-        ON cr.hotel_id = hi.id
+        ON cr.teacher_id = hi.id
         WHERE cr.user_id = #{userId}
-        GROUP BY cr.hotel_id, hi.name, hi.images
+        GROUP BY cr.teacher_id, hi.name, hi.images
         ORDER BY lastMessageTime DESC
     </select>
 </mapper>

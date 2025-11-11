@@ -14,10 +14,10 @@ public interface IChatRecordService extends IService<ChatRecord> {
     /**
      * 根据教师ID获取沟通联系人列表
      *
-     * @param hotelId 教师ID
+     * @param teacherId 教师ID
      * @return 联系人列表
      */
-    List<LinkedHashMap<String, Object>> getContactsByHotelId(Integer hotelId);
+    List<LinkedHashMap<String, Object>> getContactsByHotelId(Integer teacherId);
 
     /**
      * 根据用户ID获取沟通联系人列表

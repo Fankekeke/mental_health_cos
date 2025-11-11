@@ -32,7 +32,7 @@ public class ChatRecord implements Serializable {
     /**
      * 教师ID
      */
-    private Integer hotelId;
+    private Integer teacherId;
 
     /**
      * 发送者类型 0-用户 1-教师
