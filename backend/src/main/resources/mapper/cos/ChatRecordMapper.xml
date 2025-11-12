@@ -6,8 +6,8 @@
     <select id="getContactsByHotelId" resultType="java.util.LinkedHashMap">
         SELECT DISTINCT cr.user_id          as         studentId,
                         cr.teacher_id       AS         teacherId,
-                        ui.name             as         userName,
-                        ui.images           as         userAvatar,
+                        ui.name             as         studentName,
+                        ui.images           as         studentImages,
                         MAX(cr.create_time) as         lastMessageTime,
                         (SELECT content
                          FROM chat_record cr2
