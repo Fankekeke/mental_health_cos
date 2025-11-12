@@ -88,49 +88,8 @@ export default {
     return {
       newMessage: '',
       currentContact: {},
-      contacts: [
-        {
-          id: 1,
-          name: '心理咨询师',
-          avatar: '',
-          lastMessage: '您好，请问有什么可以帮助您的吗？',
-          status: 'online'
-        },
-        {
-          id: 2,
-          name: '辅导员张老师',
-          avatar: '',
-          lastMessage: '明天记得参加心理健康讲座',
-          status: 'offline'
-        },
-        {
-          id: 3,
-          name: '同学李明',
-          avatar: '',
-          lastMessage: '一起去图书馆吗？',
-          status: 'online'
-        }
-      ],
-      messages: [
-        {
-          id: 1,
-          sender: '心理咨询师',
-          content: '您好，请问有什么可以帮助您的吗？',
-          timestamp: new Date(Date.now() - 3600000)
-        },
-        {
-          id: 2,
-          sender: 'me',
-          content: '最近学习压力有点大，想咨询一下',
-          timestamp: new Date(Date.now() - 1800000)
-        },
-        {
-          id: 3,
-          sender: '心理咨询师',
-          content: '理解您的感受，我们可以详细聊聊具体情况',
-          timestamp: new Date(Date.now() - 1200000)
-        }
-      ]
+      contacts: [],
+      messages: []
     }
   },
   methods: {

@@ -49,6 +49,7 @@ public class ScheduleInfoController {
      *
      * @return 结果
      */
+    @GetMapping("/queryScheduleReserve")
     public R queryScheduleReserve() {
         return R.ok(scheduleInfoService.queryScheduleReserve());
     }

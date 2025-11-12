@@ -55,7 +55,7 @@ public class ChatRecordController {
      */
     @GetMapping("/contacts/hotel/{teacherId}")
     public R getContactsByHotelId(@PathVariable Integer teacherId) {
-        TeacherInfo teacherInfo = teacherInfoService.getOne(Wrappers.<TeacherInfo>lambdaQuery().eq(TeacherInfo::getId, teacherId));
+        TeacherInfo teacherInfo = teacherInfoService.getOne(Wrappers.<TeacherInfo>lambdaQuery().eq(TeacherInfo::getUserId, teacherId));
         return R.ok(chatRecordService.getContactsByHotelId(teacherInfo.getId()));
     }
 
@@ -95,6 +95,20 @@ public class ChatRecordController {
      */
     @PostMapping
     public R sendMsg(ChatRecord chatRecord) {
+        chatRecord.setCreateTime(DateUtil.formatDateTime(new Date()));
+        return R.ok(chatRecordService.save(chatRecord));
+    }
+
+    /**
+     * 发送消息
+     *
+     * @param chatRecord 聊天记录
+     * @return 结果
+     */
+    @PostMapping("/defaultChat")
+    public R defaultChat(ChatRecord chatRecord) {
+        StudentInfo studentInfo = studentInfoService.getOne(Wrappers.<StudentInfo>lambdaQuery().eq(StudentInfo::getUserId, chatRecord.getUserId()));
+        chatRecord.setUserId(studentInfo.getId());
         chatRecord.setCreateTime(DateUtil.formatDateTime(new Date()));
         return R.ok(chatRecordService.save(chatRecord));
     }

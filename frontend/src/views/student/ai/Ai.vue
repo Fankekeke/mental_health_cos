@@ -8,7 +8,7 @@
     <div class="chat-box">
       <div v-for="(message, index) in messages" :key="index" :class="['message', message.type]">
         <div class="avatar">
-          <img :src="message.avatar" :alt="message.type === 'bot' ? '医生头像' : '用户头像'" />
+          <img :src="message.avatar" :alt="message.type === 'bot' ? '教师头像' : '用户头像'" />
         </div>
         <div class="content">
           <p class="message-text">{{ message.text }}</p>

@@ -41,6 +41,12 @@
         <if test="registerInfo.studentName != null and registerInfo.studentName != ''">
             AND stui.name LIKE CONCAT('%',#{registerInfo.studentName},'%')
         </if>
+        <if test="registerInfo.staffId != null and registerInfo.staffId != ''">
+            AND ti.user_id = #{registerInfo.staffId}
+        </if>
+        <if test="registerInfo.userId != null and registerInfo.userId != ''">
+            AND stui.user_id = #{registerInfo.userId}
+        </if>
         ORDER BY ri.create_date DESC
     </select>
 </mapper>

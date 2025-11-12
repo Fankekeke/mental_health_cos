@@ -11,14 +11,14 @@
                         MAX(cr.create_time) as         lastMessageTime,
                         (SELECT content
                          FROM chat_record cr2
-                         WHERE cr2.user_id = cr.user_id
+                         WHERE cr2.teacher_id = cr.teacher_id
                            AND cr2.teacher_id = #{teacherId}
                          ORDER BY cr2.create_time DESC LIMIT 1) as lastMessage
         FROM chat_record cr
             LEFT JOIN student_info ui
         ON cr.user_id = ui.id
         WHERE cr.teacher_id = #{teacherId}
-        GROUP BY cr.user_id, ui.name, ui.avatar
+        GROUP BY cr.user_id
         ORDER BY lastMessageTime DESC
     </select>
 

@@ -17,7 +17,7 @@
         ti.name as teacher_name,
         ti.phone,
         ti.sex,
-        ti.images as teacher_images,
+        ti.images as teacher_images
         FROM
         schedule_info si
         LEFT JOIN teacher_info ti ON (ti.id = si.staff_ids)
@@ -28,6 +28,9 @@
         </if>
         <if test="scheduleInfo.status != null and scheduleInfo.status != ''">
             AND si.STATUS = #{scheduleInfo.status}
+        </if>
+        <if test="scheduleInfo.staffId != null and scheduleInfo.staffId != ''">
+            AND ti.user_id = #{scheduleInfo.staffId}
         </if>
         ORDER BY
         si.task_date DESC
@@ -48,13 +51,14 @@
         ti.name as teacher_name,
         ti.phone,
         ti.sex,
-        ti.images as teacher_images,
+        ti.images as teacher_images
         FROM
         schedule_info si
         LEFT JOIN teacher_info ti ON (ti.id = si.staff_ids)
         WHERE
         1 = 1
-        AND AND si.start_date >= #{currentTime}
+          AND CONCAT(si.task_date, ' ', si.start_date) > NOW()
+        AND si.check_flag = '0'
         ORDER BY
         si.task_date DESC
     </select>

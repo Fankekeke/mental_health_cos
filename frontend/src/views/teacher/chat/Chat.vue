@@ -159,7 +159,7 @@ export default {
         // 将后端返回的聊天记录转换为前端需要的格式
         this.messages = r.data.data.map(message => ({
           id: message.id,
-          sender: message.senderType === '0' ? 'me' : message.teacherId.toString(),
+          sender: message.senderType === '1' ? 'me' : message.teacherId.toString(),
           content: message.content,
           timestamp: new Date(message.createTime)
         }))
